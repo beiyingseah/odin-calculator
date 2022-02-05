@@ -3,6 +3,7 @@ body {
     min-height: 100vh;
     font-family: "HelveticaNeue-UltraLight", "Helvetica Ultra Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 100;
+    background: radial-gradient(#e66465, #9198e5);
 }
 
 /* MAIN */
@@ -10,24 +11,33 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: #919191;
     max-width: 231px;
     max-height: 320px;
     margin: 100px auto;
     border: 1px solid #646464;
     border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
+    background: radial-gradient(ellipse at top, #464646, transparent),
+    radial-gradient(ellipse at bottom, white, transparent);
 }
 
+
 #readout {
-    background-color: inherit;
     width: auto;
     height: 100px; 
     border-radius: 6px 6px 0px 0px;
+    margin: 28px 10px 0 auto;
+    font-size: 45px;
+    color: white;
 }
 
 .buttons-container {
     display: flex;
     justify-content: space-between;
+}
+
+.last {
+    margin-bottom: 1px;
 }
 
 /* BUTTONS */
@@ -45,6 +55,7 @@ button {
     text-align: left;
     padding-left: 25px;
     border-bottom-left-radius: 6px;
+
 }
 
 #equal {
