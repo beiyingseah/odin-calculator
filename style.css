@@ -3,7 +3,7 @@ body {
     min-height: 100vh;
     font-family: "HelveticaNeue-UltraLight", "Helvetica Ultra Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 100;
-    background: radial-gradient(#e66465, #9198e5);
+    background: radial-gradient(#fc7d7d, #b4bafa);
 }
 
 /* MAIN */
@@ -17,8 +17,8 @@ body {
     border: 1px solid #646464;
     border-radius: 6px;
     box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
-    background: radial-gradient(ellipse at top, #464646, transparent),
-    radial-gradient(ellipse at bottom, white, transparent);
+    background: radial-gradient(ellipse at top, #443f3f, transparent),
+    radial-gradient(ellipse at bottom, #464646, transparent);
 }
 
 
@@ -26,10 +26,12 @@ body {
     width: auto;
     height: 100px; 
     border-radius: 6px 6px 0px 0px;
-    margin: 28px 10px 0 auto;
-    font-size: 45px;
+    margin: 28px 5px 0 5px;
     color: white;
+    font-size: 24px;
+    text-align: right;
 }
+
 
 .buttons-container {
     display: flex;
