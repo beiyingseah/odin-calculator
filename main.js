@@ -1,87 +1,152 @@
+// Initiaise default/start variables (or, states - see FSA diagram)
+const DEFAULT_NUM = 0;
+const DEFAULT_STATE = 'default'
+
+// Initiaising global variables (or, states) 
+/* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states/modes: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
+let currentState = DEFAULT_STATE;
+let storedNum = DEFAULT_NUM;
+let inputNum = DEFAULT_NUM;
+
+// "Global State handler" function
+function setCurrentState(newState) {
+    activateButton(newState);
+    currentState = newState;
+}
+
+/* "Mathematical arithmetic" helper functions */
 // Add 
-function add(stored_value, num) {
-    return stored_value += num;
+function add(storedNum, inputNum) {
+    storedNum += inputNum;
 }
-
 // Subtract
-function subtract(stored_value, num) {
-    return stored_value -= num
+function subtract(storedNum, inputNum) {
+    storedNum -= inputNum
 }
-
 // Multiply
-function multiply(stored_value, num) {
-    return stored_value *= num
+function multiply(storedNum, inputNum) {
+    storedNum *= inputNum
 }
-
 // Divide
-function divide(stored_value, num) {
-    return stored_value /= num;
+function divide(storedNum, inputNum) {
+    storedNum /= inputNum;
 }
 
-function operate(operator, stored_value, digit) {
-    stored_value = Number(stored_value);
-    digit = Number(digit);
+// makeNegative
+function toggleSign(inputNum) {
+    inputNum * -1;
+}
+
+
+function operate(operator, storedNum, inputNum) {
     switch (operator) {
         case '/':
             if (input === 0) return NaN;
-            else return divide(stored_value, digit);
+            else divide(storedNum, inputNum);
+            break;
         case '*':
-            return multiply(stored_value, digit);
+            multiply(storedNum, inputNum);
+            break;
         case '-':
-            return subtract(stored_value, digit);
+            subtract(storedNum, inputNum);
+            break;
         case '+':
-            return add(stored_value, digit);
-        default:
-            return null;
+            add(storedNum, inputNum);
+            break;
     }
 }
 
 /* List of interactive variables */ 
 const readout = document.getElementById('readout');
-const digits = document.querySelectorAll('.digit'); 
+const integers = document.querySelectorAll('.integer'); 
 const clearAllBtn = document.getElementById('clearAllBtn');
-const clearEntryBtn = document.getElementById('clearEntryBtn')
+const clearEntryBtn = document.getElementById('clearEntryBtn');
+const operators = document.querySelectorAll('.operator');
+const equalBtn = document.querySelector('.operator-equal')
+const toggleSignBtn = document.getElementById('toggleSignBtn');
 
 /* Events to capture */
-// Digits
-digits.forEach((digit) => {
-    digit.addEventListener('click', function() {
+// Integer buttons logic
+integers.forEach((integer) => {
+    integer.addEventListener('click', function() {
         if (readout.textContent.length === 16) {
             return null;
         }
-
-        // Limit Readout to one variable
-        if ((readout.textContent.indexOf(".") !== -1) && digit.value === '.') {
+        // Limit Readout to display  one decimal symbol
+        else if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
             return null;
         }
-         
-        else {
-            printReadout(digit.value);
+
+        // Readout to show '.0' if decimal mode is selected without any integers 
+        else if (readout.textContent === '' && integer.value === '.') {
+            rewriteReadout('0.');
+        }
+
+        // Replace default value, 0
+        else if ((readout.textContent === '0' && integer.value === '0') ||
+        (readout.textContent === '0' && integer.value !== '0')) {
+            rewriteReadout(integer.value);
+        }
+        
+        // Add number to Readout if it starts with non-zero integer
+        else { 
+            addToReadout(integer.value);
         }
     })
 });
+
+// Toggle sign between positive and negative
+toggleSignBtn.onclick = (inputNum) => toggleSign(inputNum);
 
 // Clear buttons
 clearAllBtn.onclick = () => clearReadout();
 clearEntryBtn.onclick = () => backspaceReadout();
 
+// Operator buttons
+operators.forEach((operator) => {
+    // and for each one we add a 'click' listener, with a callback function that gets called when the event happens
+    operator.addEventListener('click', function() {
+        if (readout.textContent === '0') {
+            return null;
+        } 
+        else {
+            // update state 
+        }
+    })
+});
 
-/* SCREEN READOUT INTERACTIVITY */
-function printReadout(digit) {
-    readout.textContent += digit;
+// Equal button
+equalBtn.onclick = () => {
+    if (storedValue === '') {
+
+    }
 }
 
-function clearReadout() {
-    readout.textContent = '';
+/* SCREEN READOUT INTERACTIVITY */
+function rewriteReadout(integer) {
+    readout.textContent = integer;
+}
+
+function addToReadout(integer) {
+    readout.textContent += integer;
+}
+
+// Starting state: 0 
+function restartCalculator() {
+    readout.textContent = DEFAULT_NUM.toString();
 }
 
 function backspaceReadout() {
     readout.textContent = readout.textContent.substring(0,readout.textContent.length - 1);
 }
 
-/* COLOUR BUTTONS INTERACTIVITY */
+/* BUTTONS INTERACTIVITY */
+function activateButtonsConfig(newState) {
+
+}
 
 /* MAIN */
+restartCalculator();
 
 
 /* RECAP */
