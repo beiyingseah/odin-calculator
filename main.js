@@ -5,31 +5,43 @@ const DEFAULT_STATE = 'default'
 // Initiaising global variables (or, states) 
 /* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states/modes: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
 let currentState = DEFAULT_STATE;
-let storedNum = DEFAULT_NUM;
+let storedResult = DEFAULT_NUM;
 let inputNum = DEFAULT_NUM;
-
+ 
 // "Global State handler" function
 function setCurrentState(newState) {
-    activateButton(newState);
     currentState = newState;
+    step(currentState);
+}
+
+// (Global) Calculator reset 
+function resetGlobalValues() {
+    storedResult = DEFAULT_NUM;
+    inputNum = DEFAULT_NUM;
+}
+
+function restartCalculator() {
+    readout.textContent = DEFAULT_NUM.toString();
+    setCurrentState(DEFAULT_STATE);
+    resetGlobalValues(DEFAULT_NUM);
 }
 
 /* "Mathematical arithmetic" helper functions */
 // Add 
-function add(storedNum, inputNum) {
-    storedNum += inputNum;
+function add(storedResult, inputNum) {
+    storedResult += inputNum;
 }
 // Subtract
-function subtract(storedNum, inputNum) {
-    storedNum -= inputNum
+function subtract(storedResult, inputNum) {
+    storedResult -= inputNum
 }
 // Multiply
-function multiply(storedNum, inputNum) {
-    storedNum *= inputNum
+function multiply(storedResult, inputNum) {
+    storedResult *= inputNum
 }
 // Divide
-function divide(storedNum, inputNum) {
-    storedNum /= inputNum;
+function divide(storedResult, inputNum) {
+    storedResult /= inputNum;
 }
 
 // makeNegative
@@ -38,20 +50,20 @@ function toggleSign(inputNum) {
 }
 
 
-function operate(operator, storedNum, inputNum) {
+function operate(operator, storedResult, inputNum) {
     switch (operator) {
         case '/':
             if (input === 0) return NaN;
-            else divide(storedNum, inputNum);
+            else divide(storedResult, inputNum);
             break;
         case '*':
-            multiply(storedNum, inputNum);
+            multiply(storedResult, inputNum);
             break;
         case '-':
-            subtract(storedNum, inputNum);
+            subtract(storedResult, inputNum);
             break;
         case '+':
-            add(storedNum, inputNum);
+            add(storedResult, inputNum);
             break;
     }
 }
@@ -76,18 +88,15 @@ integers.forEach((integer) => {
         else if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
             return null;
         }
-
         // Readout to show '.0' if decimal mode is selected without any integers 
-        else if (readout.textContent === '' && integer.value === '.') {
+        else if (readout.textContent === '0' && integer.value === '.') {
             rewriteReadout('0.');
         }
-
         // Replace default value, 0
         else if ((readout.textContent === '0' && integer.value === '0') ||
         (readout.textContent === '0' && integer.value !== '0')) {
             rewriteReadout(integer.value);
         }
-        
         // Add number to Readout if it starts with non-zero integer
         else { 
             addToReadout(integer.value);
@@ -110,16 +119,13 @@ operators.forEach((operator) => {
             return null;
         } 
         else {
-            // update state 
+            operate(operator.value, storedResult, inputNum);
         }
     })
 });
 
 // Equal button
 equalBtn.onclick = () => {
-    if (storedValue === '') {
-
-    }
 }
 
 /* SCREEN READOUT INTERACTIVITY */
@@ -131,18 +137,23 @@ function addToReadout(integer) {
     readout.textContent += integer;
 }
 
-// Starting state: 0 
-function restartCalculator() {
-    readout.textContent = DEFAULT_NUM.toString();
-}
-
 function backspaceReadout() {
     readout.textContent = readout.textContent.substring(0,readout.textContent.length - 1);
 }
 
-/* BUTTONS INTERACTIVITY */
-function activateButtonsConfig(newState) {
 
+/* BUTTONS INTERACTIVITY */
+function step(currentState, inputNum, action) {
+    switch (currentState) {
+        case 'default':
+            restartCalculator();
+        case 'firstOperandDecimalEdit':
+            firstOperand
+        case 'firstOperandIntegerEdit':
+        case 'secondOperandDecimalEdit':
+        case 'secondOperandDecimalEdit':
+        case 'result':
+    }
 }
 
 /* MAIN */
