@@ -1,30 +1,23 @@
 // Initiaise default/start variables (or, states - see FSA diagram)
-const DEFAULT_NUM = 0;
-const DEFAULT_STATE = 'default'
+const DEFAULT_MODE = 'default'
+const DEFAULT_DISPLAY = '0';
+const DEFAULT_ARG = 'null'
 
 // Initiaising global variables that define a global state at any one time
 /* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
-let currentMode = DEFAULT_STATE;
-let displayValue = DEFAULT_NUM;
-let firstArg = null; //null is used to intentionally give an empty value to something
-let secondArg = null;
+let currentMode = DEFAULT_MODE;
+let displayValue = DEFAULT_DISPLAY;
+let firstArg = DEFAULT_ARG; //null is used to intentionally give an empty value to something
+let secondArg = DEFAULT_ARG;
+let operator = DEFAULT_ARG;
  
 // "Global State handler" function
-function setCurrentMode(newMode) {
-    CurrentMode = newMode;
-    step(CurrentMode);
-}
-
-// (Global) Calculator reset 
-function resetGlobalValues() {
-    firstArg = DEFAULT_NUM;
-    secondArg = DEFAULT_NUM;
-}
-
-function restartCalculator() {
-    readout.textContent = DEFAULT_NUM.toString();
-    setCurrentMode(DEFAULT_STATE);
-    resetGlobalValues(DEFAULT_NUM);
+function startUpCalculator() {
+    readout.textContent = DEFAULT_DISPLAY;
+    currentMode = DEFAULT_MODE;
+    firstArg = DEFAULT_ARG;
+    secondArg = DEFAULT_ARG;
+    operator = DEFAULT_ARG;
 }
 
 /* "Mathematical arithmetic" helper functions */
@@ -79,13 +72,15 @@ console.log(e.target);
 /* Events to capture */
 // Constraints of integer display on Readout regardless of the mode...
 integers.forEach((integer) => {
-    integer.addEventListener('click', function() {
-        if ((e.target.className == 'integer' || e.target.className == 'decimal') && (readout.textContent.length === 16)) {
+    integer.addEventListener('click', function(action) {
+        action = e.target;
+
+        if ((action.className == 'integer' || action.id == 'decimal') && (displayValue.length === 16)) {
             return null;
         }
 
         // Limit Readout to display  one decimal symbol
-        if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
+        else if ((displayValue.indexOf('.') !== -1) && action.value === '.') {
             return null;
         }
 
@@ -97,17 +92,85 @@ integers.forEach((integer) => {
 
 // Button config dependent on each mode
 buttons.forEach((button) => {
-    button.addEventListener('click', function() {
-        
+    button.addEventListener('click', function(currentMode, action) {
+        action = e.target;
+        switch (currentMode) {
+            case 'default':
+                if (action.id === 'clearAll' || action.id === 'clearEntry' || action.id === 'zero' || action.id === 'equal') {
+                    return null;
+                }
+                else if (action.id === 'decimal') {
+                    currentMode = 'firstArgDecimalEdit';
+                    rewriteDisplayValue('0.');
+                }
+                else if (action.className === 'integer') {
+                    currentMode = 'firstArgIntegerEdit';
+                    rewriteDisplayValue(action.value);
+                } 
+                else if (action.className === 'operator') {
+                    currentMode = 'firstArgLocked';
+                    firstArg = Number(displayValue)
+                    operator = action.value;
+                }
+                break;
+
+            case 'firstArgDecimalEdit':
+                if (action.id === 'clearAll') {
+                    startUpCalculator();
+                }
+                else if (action.id === 'decimal') {
+                    return null;
+                }
+                else if (action.className === 'integer') {
+                    addToDisplayValue(action.value);
+                }
+                else if (action.id === 'clearEntry') {
+                    clearEntry();
+                }
+                else if (action.className === 'operator') {
+                    currentMode = 'firstArgLocked';
+                    firstArg = Number(displayValue);
+                    operator = action.value;
+                }
+                break;
+
+            case 'firstArgIntegerEdit':
+                if (action.id === 'clearAll') {
+                    startUpCalculator();
+                }
+                else if (action.id === 'decimal') {
+                    currentMode = 'firstArgDecimalEdit';
+                    addToDisplayValue(action.value);
+                }
+                else if (action.className === 'integer') {
+                    addToDisplayValue(action.value);
+                }
+                else if (action.id === 'clearEntry') {
+                    clearEntry();
+                }
+                else if (action.className === 'operator') {
+                    currentMode = 'firstArgLocked';
+                    firstArg = Number(displayValue);
+                    operator = action.value;
+                }
+                break;
+                
+            case 'firstArgLocked':
+                break;
+            case 'secondArgDecimalEdit':
+                break;
+            case 'secondArgIntegerEdit':
+                break;
+            case 'result':
+                break;
+        }
+
         // Readout to show '.0' if decimal mode is selected without any integers 
         if (readout.textContent === '0' && integer.value === '.') {
-            rewriteReadout('0.');
+            
         }
         else if 
         // Replace default value, 0
-
-        /* WITH THE STATE-ACTION FUNCTION, YOU DON'T NEED TO DESCRIBE STATE BASED ON THE READOUT CONDITIONS */
-
         else if ((readout.textContent === '0' && integer.value === '0') ||
         (readout.textContent === '0' && integer.value !== '0')) {
             rewriteReadout(integer.value);
@@ -133,46 +196,26 @@ operators.forEach((operator) => {
     })
 });
 
-// Clear buttons
-clearAllBtn.onclick = () => clearReadout();
-clearEntryBtn.onclick = () => backspaceReadout();
-
-// Equal button
-equalBtn.onclick = () => {
-}
 
 /* SCREEN READOUT INTERACTIVITY */
-function rewriteReadout(integer) {
-    displayValue = integer.value;
+function rewriteDisplayValue(num) {
+    displayValue = num;
     readout.textContent = displayValue;
 }
 
-function addToReadout(integer) {
-    displayValue += integer;
+function addToDisplayValue(num) {
+    displayValue += num; //concatenate string
     readout.textContent =  displayValue;
 }
 
-function backspaceReadout() {
-    readout.textContent = readout.textContent.substring(0,readout.textContent.length - 1);
+function clearEntry() {
+    displayValue = displayValue.substring(0, displayValue.length - 1);
+    readout.textContent = displayValue;
 }
 
-
-/* BUTTONS INTERACTIVITY */
-function step(CurrentMode, action) {
-    switch (CurrentMode) {
-        case 'default':
-            restartCalculator();
-        case 'firstOperandDecimalEdit':
-            firstOperand
-        case 'firstOperandIntegerEdit':
-        case 'secondOperandDecimalEdit':
-        case 'secondOperandDecimalEdit':
-        case 'result':
-    }
-}
 
 /* MAIN */
-restartCalculator();
+startUpCalculator();
 
 
 /* RECAP */
