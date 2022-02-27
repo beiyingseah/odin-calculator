@@ -2,16 +2,17 @@
 const DEFAULT_NUM = 0;
 const DEFAULT_STATE = 'default'
 
-// Initiaising global variables (or, states) 
-/* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states/modes: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
-let currentState = DEFAULT_STATE;
-let storedResult = DEFAULT_NUM;
-let inputNum = DEFAULT_NUM;
+// Initiaising global variables that define a global state at any one time
+/* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
+let currentMode = DEFAULT_STATE;
+let displayValue = DEFAULT_NUM;
+let firstArg = null; //null is used to intentionally give an empty value to something
+let secondArg = null;
  
 // "Global State handler" function
-function setCurrentState(newState) {
-    currentState = newState;
-    step(currentState);
+function setCurrentMode(newMode) {
+    CurrentMode = newMode;
+    step(CurrentMode);
 }
 
 // (Global) Calculator reset 
@@ -22,7 +23,7 @@ function resetGlobalValues() {
 
 function restartCalculator() {
     readout.textContent = DEFAULT_NUM.toString();
-    setCurrentState(DEFAULT_STATE);
+    setCurrentMode(DEFAULT_STATE);
     resetGlobalValues(DEFAULT_NUM);
 }
 
@@ -77,6 +78,8 @@ const operators = document.querySelectorAll('.operator');
 const equalBtn = document.querySelector('.operator-equal')
 const toggleSignBtn = document.getElementById('toggleSignBtn');
 
+console.log(e.target);
+
 /* Events to capture */
 // Integer buttons logic
 integers.forEach((integer) => {
@@ -84,6 +87,8 @@ integers.forEach((integer) => {
         if (readout.textContent.length === 16) {
             return null;
         }
+
+        if (current)
         // Limit Readout to display  one decimal symbol
         else if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
             return null;
@@ -130,11 +135,13 @@ equalBtn.onclick = () => {
 
 /* SCREEN READOUT INTERACTIVITY */
 function rewriteReadout(integer) {
-    readout.textContent = integer;
+    displayValue = integer.value;
+    readout.textContent = displayValue;
 }
 
 function addToReadout(integer) {
-    readout.textContent += integer;
+    displayValue += integer;
+    readout.textContent =  displayValue;
 }
 
 function backspaceReadout() {
@@ -143,8 +150,8 @@ function backspaceReadout() {
 
 
 /* BUTTONS INTERACTIVITY */
-function step(currentState, inputNum, action) {
-    switch (currentState) {
+function step(CurrentMode, action) {
+    switch (CurrentMode) {
         case 'default':
             restartCalculator();
         case 'firstOperandDecimalEdit':
