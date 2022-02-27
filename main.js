@@ -17,8 +17,8 @@ function setCurrentMode(newMode) {
 
 // (Global) Calculator reset 
 function resetGlobalValues() {
-    storedResult = DEFAULT_NUM;
-    inputNum = DEFAULT_NUM;
+    firstArg = DEFAULT_NUM;
+    secondArg = DEFAULT_NUM;
 }
 
 function restartCalculator() {
@@ -29,75 +29,85 @@ function restartCalculator() {
 
 /* "Mathematical arithmetic" helper functions */
 // Add 
-function add(storedResult, inputNum) {
-    storedResult += inputNum;
+function add(firstArg, secondArg) {
+    firstArg += secondArg;
 }
 // Subtract
-function subtract(storedResult, inputNum) {
-    storedResult -= inputNum
+function subtract(firstArg, secondArg) {
+    firstArg -= secondArg;
 }
 // Multiply
-function multiply(storedResult, inputNum) {
-    storedResult *= inputNum
+function multiply(firstArg, secondArg) {
+    firstArg *= secondArg;
 }
 // Divide
-function divide(storedResult, inputNum) {
-    storedResult /= inputNum;
+function divide(firstArg, secondArg) {
+    firstArg /= secondArg;
 }
 
 // makeNegative
-function toggleSign(inputNum) {
-    inputNum * -1;
+function toggleSign(num) {
+    return num * -1;
 }
 
 
-function operate(operator, storedResult, inputNum) {
+function operate(operator, firstArg, secondArg) {
     switch (operator) {
         case '/':
             if (input === 0) return NaN;
-            else divide(storedResult, inputNum);
+            else divide(firstArg, secondArg);
             break;
         case '*':
-            multiply(storedResult, inputNum);
+            multiply(firstArg, secondArg);
             break;
         case '-':
-            subtract(storedResult, inputNum);
+            subtract(firstArg, secondArg);
             break;
         case '+':
-            add(storedResult, inputNum);
+            add(firstArg, secondArg);
             break;
     }
 }
 
 /* List of interactive variables */ 
 const readout = document.getElementById('readout');
-const integers = document.querySelectorAll('.integer'); 
-const clearAllBtn = document.getElementById('clearAllBtn');
-const clearEntryBtn = document.getElementById('clearEntryBtn');
-const operators = document.querySelectorAll('.operator');
-const equalBtn = document.querySelector('.operator-equal')
-const toggleSignBtn = document.getElementById('toggleSignBtn');
+const buttons = document.querySelectorAll('button'); 
+const integers = document.querySelectorAll('.integer');
 
 console.log(e.target);
 
 /* Events to capture */
-// Integer buttons logic
+// Constraints of integer display on Readout regardless of the mode...
 integers.forEach((integer) => {
     integer.addEventListener('click', function() {
-        if (readout.textContent.length === 16) {
+        if ((e.target.className == 'integer' || e.target.className == 'decimal') && (readout.textContent.length === 16)) {
             return null;
         }
 
-        if (current)
         // Limit Readout to display  one decimal symbol
-        else if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
+        if ((readout.textContent.indexOf('.') !== -1) && integer.value === '.') {
             return null;
         }
+
+    })
+});
+
+
+// To update toggle between positive and negative for the correct arg in every mode
+
+// Button config dependent on each mode
+buttons.forEach((button) => {
+    button.addEventListener('click', function() {
+        
         // Readout to show '.0' if decimal mode is selected without any integers 
-        else if (readout.textContent === '0' && integer.value === '.') {
+        if (readout.textContent === '0' && integer.value === '.') {
             rewriteReadout('0.');
         }
+        else if 
         // Replace default value, 0
+
+        /* WITH THE STATE-ACTION FUNCTION, YOU DON'T NEED TO DESCRIBE STATE BASED ON THE READOUT CONDITIONS */
+
         else if ((readout.textContent === '0' && integer.value === '0') ||
         (readout.textContent === '0' && integer.value !== '0')) {
             rewriteReadout(integer.value);
@@ -109,12 +119,6 @@ integers.forEach((integer) => {
     })
 });
 
-// Toggle sign between positive and negative
-toggleSignBtn.onclick = (inputNum) => toggleSign(inputNum);
-
-// Clear buttons
-clearAllBtn.onclick = () => clearReadout();
-clearEntryBtn.onclick = () => backspaceReadout();
 
 // Operator buttons
 operators.forEach((operator) => {
@@ -124,10 +128,14 @@ operators.forEach((operator) => {
             return null;
         } 
         else {
-            operate(operator.value, storedResult, inputNum);
+            operate(operator.value, firstArg, secondArg);
         }
     })
 });
+
+// Clear buttons
+clearAllBtn.onclick = () => clearReadout();
+clearEntryBtn.onclick = () => backspaceReadout();
 
 // Equal button
 equalBtn.onclick = () => {
