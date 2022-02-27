@@ -66,37 +66,46 @@ function operate(operator, firstArg, secondArg) {
 const readout = document.getElementById('readout');
 const buttons = document.querySelectorAll('button'); 
 const integers = document.querySelectorAll('.integer');
-
-console.log(e.target);
+const toggleSignBtn = document.getElementById('toggleSign');
+const clearAllBtn = document.getElementById('clearAll');
 
 /* Events to capture */
 // Constraints of integer display on Readout regardless of the mode...
 integers.forEach((integer) => {
-    integer.addEventListener('click', function(action) {
+    integer.addEventListener('click', function(e) {
         action = e.target;
-
-        if ((action.className == 'integer' || action.id == 'decimal') && (displayValue.length === 16)) {
+        if (displayValue.length === 16) {
             return null;
         }
-
-        // Limit Readout to display  one decimal symbol
-        else if ((displayValue.indexOf('.') !== -1) && action.value === '.') {
-            return null;
+        
+        // Readout to show '.0' if decimal mode is selected without any integers 
+        else if (displayValue === '0' && action.value === '.') {
+            rewriteDisplayValue('0.');
         }
 
+        // Replace default value, 0
+        else if ((displayValue === '0' && action.value === '0') || (displayValue === '0' && action.value !== '0')) {
+            rewriteDisplayValue(action.value);
+        }
+
+         // Limit Readout to display one decimal symbol
+         else if ((displayValue.indexOf('.') !== -1) && action.value === '.') {
+            return null;
+        }
     })
 });
 
-
-// To update toggle between positive and negative for the correct arg in every mode
+// Buttons with logic that are independent of the mode
+toggleSignBtn.onclick = () => rewriteDisplayValue(toggleSign(displayValue));
+clearAllBtn.onclick = () => startUpCalculator();
 
 // Button config dependent on each mode
 buttons.forEach((button) => {
-    button.addEventListener('click', function(currentMode, action) {
+    button.addEventListener('click', function(e) {
         action = e.target;
         switch (currentMode) {
             case 'default':
-                if (action.id === 'clearAll' || action.id === 'clearEntry' || action.id === 'zero' || action.id === 'equal') {
+                if  (action.id === 'clearEntry' || action.id === 'zero' || action.id === 'equal' || action.id === 'toggleSign') {
                     return null;
                 }
                 else if (action.id === 'decimal') {
@@ -115,8 +124,8 @@ buttons.forEach((button) => {
                 break;
 
             case 'firstArgDecimalEdit':
-                if (action.id === 'clearAll') {
-                    startUpCalculator();
+                if (action.id === 'clearEntry') {
+                    clearEntry();
                 }
                 else if (action.id === 'decimal') {
                     return null;
@@ -124,21 +133,19 @@ buttons.forEach((button) => {
                 else if (action.className === 'integer') {
                     addToDisplayValue(action.value);
                 }
-                else if (action.id === 'clearEntry') {
-                    clearEntry();
-                }
                 else if (action.className === 'operator') {
                     currentMode = 'firstArgLocked';
                     firstArg = Number(displayValue);
                     operator = action.value;
                 }
+                else if (action.id === 'equal') {
+                    currentMode = 'result';
+                    firstArg = Number(displayValue);
+                }
                 break;
 
             case 'firstArgIntegerEdit':
-                if (action.id === 'clearAll') {
-                    startUpCalculator();
-                }
-                else if (action.id === 'decimal') {
+                if (action.id === 'decimal') {
                     currentMode = 'firstArgDecimalEdit';
                     addToDisplayValue(action.value);
                 }
@@ -153,46 +160,60 @@ buttons.forEach((button) => {
                     firstArg = Number(displayValue);
                     operator = action.value;
                 }
+                else if (action.id === 'equal') {
+                    currentMode = 'result';
+                    firstArg = Number(displayValue);
+                }
                 break;
                 
             case 'firstArgLocked':
+                if (action.id === 'clearEntry') {
+                    startUpCalculator();
+                }
+                else if (action.className === 'operator') {
+                    operator = action.value;
+                }
+                else if (action.id === 'decimal'){
+                    currenMode = 'secondArgDecimalEdit'
+                    firstArg = Number(displayValue);
+                }
+                else if (action.id === 'integer') {
+                    currentMode ='secondArgIntegerEdit'
+                    firstArg = Number(displayValue);
+
+                }
+                else if (action.id === 'equal') {
+                    currentMode = 'result';
+                    firstArg = Number(displayValue);
+                }
                 break;
+
             case 'secondArgDecimalEdit':
+                if (action.id === 'clearEntry') {
+                    clearEntry();
+                }
+                else if (action.className === 'integer') {
+                    addToDisplayValue(action.value);
+                }
+                else if (action.className === 'operator') {
+                    currentMode = 'firstArgLocked';
+                    firstArg = Number(displayValue);
+                    operator = action.value;
+                }
+                else if (action.id === 'equal') {
+                    currentMode = 'result';
+                    firstArg = Number(displayValue);
+                }
                 break;
+
             case 'secondArgIntegerEdit':
                 break;
+
             case 'result':
                 break;
         }
 
-        // Readout to show '.0' if decimal mode is selected without any integers 
-        if (readout.textContent === '0' && integer.value === '.') {
-            
-        }
-        else if 
-        // Replace default value, 0
-        else if ((readout.textContent === '0' && integer.value === '0') ||
-        (readout.textContent === '0' && integer.value !== '0')) {
-            rewriteReadout(integer.value);
-        }
-        // Add number to Readout if it starts with non-zero integer
-        else { 
-            addToReadout(integer.value);
-        }
-    })
-});
-
-
-// Operator buttons
-operators.forEach((operator) => {
-    // and for each one we add a 'click' listener, with a callback function that gets called when the event happens
-    operator.addEventListener('click', function() {
-        if (readout.textContent === '0') {
-            return null;
-        } 
-        else {
-            operate(operator.value, firstArg, secondArg);
-        }
+       
     })
 });
 
@@ -209,10 +230,15 @@ function addToDisplayValue(num) {
 }
 
 function clearEntry() {
-    displayValue = displayValue.substring(0, displayValue.length - 1);
+    newDisplayValue = displayValue.substring(0, displayValue.length - 1);
+    if (newDisplayValue.length === 0) {
+        displayValue = DEFAULT_DISPLAY;
+    } 
+    else {
+        displayValue = newDisplayValue;
+    }
     readout.textContent = displayValue;
 }
-
 
 /* MAIN */
 startUpCalculator();
