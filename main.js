@@ -1,7 +1,7 @@
 // Initiaise default/start variables (or, states - see FSA diagram)
 const DEFAULT_MODE = 'default'
 const DEFAULT_DISPLAY = '0';
-const DEFAULT_ARG = 'null'
+const DEFAULT_ARG = null
 
 // Initiaising global variables that define a global state at any one time
 /* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
@@ -12,30 +12,31 @@ let secondArg = DEFAULT_ARG;
 let operator = DEFAULT_ARG;
  
 // "Global State handler" function
+
+
+
 function startUpCalculator() {
+    stepCalculator('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG);
     readout.textContent = DEFAULT_DISPLAY;
-    currentMode = DEFAULT_MODE;
-    firstArg = DEFAULT_ARG;
-    secondArg = DEFAULT_ARG;
     operator = DEFAULT_ARG;
 }
 
 /* "Mathematical arithmetic" helper functions */
 // Add 
-function add(firstArg, secondArg) {
-    firstArg += secondArg;
+function add(first_arg, second_arg) {
+    return first_arg += second_arg;
 }
 // Subtract
-function subtract(firstArg, secondArg) {
-    firstArg -= secondArg;
+function subtract(first_arg, second_arg) {
+    return first_arg -= second_arg;
 }
 // Multiply
-function multiply(firstArg, secondArg) {
-    firstArg *= secondArg;
+function multiply(first_arg, second_arg) {
+    return first_arg *= second_arg;
 }
 // Divide
-function divide(firstArg, secondArg) {
-    firstArg /= secondArg;
+function divide(first_arg, second_arg) {
+    return first_arg /= second_arg;
 }
 
 // makeNegative
@@ -44,20 +45,20 @@ function toggleSign(num) {
 }
 
 
-function operate(operator, firstArg, secondArg) {
+function operate(operator, first_arg, second_arg) {
     switch (operator) {
         case '/':
             if (input === 0) return NaN;
-            else divide(firstArg, secondArg);
+            else divide(first_arg, second_arg);
             break;
         case '*':
-            multiply(firstArg, secondArg);
+            multiply(first_arg, second_arg);
             break;
         case '-':
-            subtract(firstArg, secondArg);
+            subtract(first_arg, second_arg);
             break;
         case '+':
-            add(firstArg, secondArg);
+            add(first_arg, second_arg);
             break;
     }
 }
@@ -68,8 +69,10 @@ const buttons = document.querySelectorAll('button');
 const integers = document.querySelectorAll('.integer');
 const toggleSignBtn = document.getElementById('toggleSign');
 const clearAllBtn = document.getElementById('clearAll');
+const clearEntryBtn = document.getElementById('clearEntry');
 
 /* Events to capture */
+/* Readout behaviour that are independent of the mode */
 // Constraints of integer display on Readout regardless of the mode...
 integers.forEach((integer) => {
     integer.addEventListener('click', function(e) {
@@ -80,12 +83,14 @@ integers.forEach((integer) => {
         
         // Readout to show '.0' if decimal mode is selected without any integers 
         else if (displayValue === '0' && action.value === '.') {
-            rewriteDisplayValue('0.');
+            displayValue = '0.'
+            rewriteReadout(displayValue);
         }
 
         // Replace default value, 0
         else if ((displayValue === '0' && action.value === '0') || (displayValue === '0' && action.value !== '0')) {
-            rewriteDisplayValue(action.value);
+            displayValue = action.value;
+            rewriteReadout(displayValue);
         }
 
          // Limit Readout to display one decimal symbol
@@ -95,138 +100,18 @@ integers.forEach((integer) => {
     })
 });
 
-// Buttons with logic that are independent of the mode
-toggleSignBtn.onclick = () => rewriteDisplayValue(toggleSign(displayValue));
+
+toggleSignBtn.onclick = e => {
+    displayValue = toggleSign(e.target.value);
+    rewriteReadout(displayValue);
+}
 clearAllBtn.onclick = () => startUpCalculator();
-
-// Button config dependent on each mode
-buttons.forEach((button) => {
-    button.addEventListener('click', function(e) {
-        action = e.target;
-        switch (currentMode) {
-            case 'default':
-                if  (action.id === 'clearEntry' || action.id === 'zero' || action.id === 'equal' || action.id === 'toggleSign') {
-                    return null;
-                }
-                else if (action.id === 'decimal') {
-                    currentMode = 'firstArgDecimalEdit';
-                    rewriteDisplayValue('0.');
-                }
-                else if (action.className === 'integer') {
-                    currentMode = 'firstArgIntegerEdit';
-                    rewriteDisplayValue(action.value);
-                } 
-                else if (action.className === 'operator') {
-                    currentMode = 'firstArgLocked';
-                    firstArg = Number(displayValue)
-                    operator = action.value;
-                }
-                break;
-
-            case 'firstArgDecimalEdit':
-                if (action.id === 'clearEntry') {
-                    clearEntry();
-                }
-                else if (action.id === 'decimal') {
-                    return null;
-                }
-                else if (action.className === 'integer') {
-                    addToDisplayValue(action.value);
-                }
-                else if (action.className === 'operator') {
-                    currentMode = 'firstArgLocked';
-                    firstArg = Number(displayValue);
-                    operator = action.value;
-                }
-                else if (action.id === 'equal') {
-                    currentMode = 'result';
-                    firstArg = Number(displayValue);
-                }
-                break;
-
-            case 'firstArgIntegerEdit':
-                if (action.id === 'decimal') {
-                    currentMode = 'firstArgDecimalEdit';
-                    addToDisplayValue(action.value);
-                }
-                else if (action.className === 'integer') {
-                    addToDisplayValue(action.value);
-                }
-                else if (action.id === 'clearEntry') {
-                    clearEntry();
-                }
-                else if (action.className === 'operator') {
-                    currentMode = 'firstArgLocked';
-                    firstArg = Number(displayValue);
-                    operator = action.value;
-                }
-                else if (action.id === 'equal') {
-                    currentMode = 'result';
-                    firstArg = Number(displayValue);
-                }
-                break;
-                
-            case 'firstArgLocked':
-                if (action.id === 'clearEntry') {
-                    startUpCalculator();
-                }
-                else if (action.className === 'operator') {
-                    operator = action.value;
-                }
-                else if (action.id === 'decimal'){
-                    currenMode = 'secondArgDecimalEdit'
-                    firstArg = Number(displayValue);
-                }
-                else if (action.id === 'integer') {
-                    currentMode ='secondArgIntegerEdit'
-                    firstArg = Number(displayValue);
-
-                }
-                else if (action.id === 'equal') {
-                    currentMode = 'result';
-                    firstArg = Number(displayValue);
-                }
-                break;
-
-            case 'secondArgDecimalEdit':
-                if (action.id === 'clearEntry') {
-                    clearEntry();
-                }
-                else if (action.className === 'integer') {
-                    addToDisplayValue(action.value);
-                }
-                else if (action.className === 'operator') {
-                    currentMode = 'firstArgLocked';
-                    firstArg = Number(displayValue);
-                    operator = action.value;
-                }
-                else if (action.id === 'equal') {
-                    currentMode = 'result';
-                    firstArg = Number(displayValue);
-                }
-                break;
-
-            case 'secondArgIntegerEdit':
-                break;
-
-            case 'result':
-                break;
-        }
-
-       
-    })
-});
-
+clearEntryBtn.onclick = () => clearEntry();
+  
 
 /* SCREEN READOUT INTERACTIVITY */
-function rewriteDisplayValue(num) {
-    displayValue = num;
+function rewriteReadout(displayValue) {
     readout.textContent = displayValue;
-}
-
-function addToDisplayValue(num) {
-    displayValue += num; //concatenate string
-    readout.textContent =  displayValue;
 }
 
 function clearEntry() {
@@ -237,12 +122,175 @@ function clearEntry() {
     else {
         displayValue = newDisplayValue;
     }
-    readout.textContent = displayValue;
+    rewriteReadout(displayValue);
+}
+
+// Button config dependent on each mode
+buttons.forEach((button) => {
+    button.addEventListener('click', function(e) {
+        action = e.target;
+        // Update State
+        [currentMode, displayValue, firstArg, secondArg] = step(currentMode, displayValue, firstArg, secondArg, action);
+    })
+});
+
+/* GLOBAL STATE HANDLER */
+function step(currentMode, displayValue, firstArg, secondArg, action) {
+    switch (currentMode) {
+        case 'default':
+            if  (action.id === 'zero' || action.id === 'equal') {
+                return ['default', displayValue, null, null];
+            }
+            else if (action.id === 'decimal') {              
+                displayValue = '0.'
+                rewriteReadout(displayValue);
+                return ['firstArgDecimalEdit', displayValue, null, null];
+            }
+            else if (action.className === 'integer') {
+                displayValue += action.value;
+                rewriteReadout(displayValue);
+                return ['firstArgIntegerEdit', displayValue, null, null];
+            } 
+            else if (action.className === 'operator') {
+                operator = action.value;
+                return ['firstArgLocked', DEFAULT_DISPLAY, Number(displayValue), null];
+            }
+            break;
+
+        case 'firstArgDecimalEdit':
+            if (action.id === 'decimal') {
+                return ['firstArgDecimalEdit', displayValue, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
+            }
+            else if (action.className === 'integer') {
+                displayValue += action.value; //concatenate string
+                rewriteReadout(displayValue);
+            }
+            else if (action.className === 'operator') {
+                operator = action.value;
+                return ['firstArgLocked', displayValue, Number(displayValue), null];
+            }
+
+            else if (action.id === 'equal') {
+                return ['result', displayValue, Number(displayValue), null];
+            }
+            break;
+
+        case 'firstArgIntegerEdit':
+            if (action.className === 'integer') {
+                displayValue += action.value;
+                rewriteReadout(displayValue);
+            }
+            else if (action.id === 'decimal') {
+                displayValue += action.value;
+                rewriteReadout(displayValue);
+                return ['firstArgDecimalEdit', displayValue, null, null];
+            }
+            else if (action.className === 'operator') {
+                operator = action.value;
+                return ['firstArgLocked', displayValue, Number(displayValue), null];
+                
+            }
+            else if (action.id === 'equal') {
+                return ['result', displayValue, Number(displayValue), null];
+            }
+            break;
+            
+        case 'firstArgLocked':
+            if (action.className === 'operator') {
+                operator = action.value;
+            }
+            else if (action.id === 'decimal') {
+                displayValue = '.0'
+                rewriteReadout(displayValue);
+                return ['secondArgDecimalEdit', displayValue, firstArg, Number(displayValue)];
+            }
+            else if (action.id === 'integer') {
+                displayValue = action.value;
+                rewriteReadout(displayValue);
+                return ['secondArgIntegerEdit', displayValue, firstArg, Number(displayValue)];
+
+            }
+            else if (action.id === 'equal') {
+                return ['result', displayValue, firstArg, null];
+            }
+            break;
+
+        case 'secondArgDecimalEdit':
+            if (action.className === 'integer') {
+                displayValue += action.value;
+                rewriteReadout(displayValue);
+            }
+            else if (action.className === 'operator') {
+                secondArg = Number(displayValue);
+                computedValue = operate(action.value, firstArg, secondArg).toString;
+                displayValue = computedValue;
+                rewriteReadout(displayValue);
+                return ['firstArgLocked', displayValue, Number(displayValue), null];
+            }
+            else if (action.id === 'equal') {
+                secondArg = Number(displayValue);
+                computedValue = operate(action.value, firstArg, secondArg).toString;
+                displayValue = computedValue;
+                rewriteReadout(displayValue);
+                return ['result', displayValue, firstArg, secondArg];
+            }
+            break;
+
+        case 'secondArgIntegerEdit':
+            if (action.id === 'integer') {
+                displayValue += action.value;
+                rewriteReadout(displayValue);
+            }
+            else if (action.id === 'decimal'){
+                displayValue += action.value;
+                secondArg = displayValue;
+                rewriteReadout(displayValue);
+                return ['secondArgDecimalEdit', displayValue, firstArg, secondArg];
+            }
+            else if (action.className === 'operator') {
+                secondArg = Number(displayValue);
+                computedValue = operate(operator, firstArg, secondArg).toString;
+                displayValue = computedValue;
+                rewriteReadout(displayValue);
+                return ['firstArgLocked', displayValue, Number(displayValue), null];
+            }
+            else if (action.id === 'equal') {
+                secondArg = Number(displayValue);
+                computedValue = operate(operator, firstArg, secondArg).toString;
+                displayValue = computedValue;
+                rewriteReadout(displayValue);
+                return ['result', displayValue, firstArg, secondArg];
+            }
+
+            break;
+
+
+        case 'result':
+            if (action.id === 'integer') {
+                displayValue = action.value;
+                rewriteReadout(displayValue)
+                return ['firstArgIntegerEdit', displayValue, null, null];
+            }
+            if (action.id === 'decimal') {
+                displayValue = '0.';
+                rewriteReadout(displayValue);
+                return ['firstArgDecimalEdit', displayValue, null, null];
+            }
+            if (action.id === 'equal') {
+                return ['result', displayValue, firstArg, secondArg];
+            }
+
+            if (action.id == 'operator') {
+                operator = action.id;
+                return ['firstArgLocked', displayValue, Number(displayValue), null]
+            }
+            break;
+    }
+
 }
 
 /* MAIN */
 startUpCalculator();
-
 
 /* RECAP */
 // A string, representing the underlying value that is associated with the button. Type conversion to Number required!
