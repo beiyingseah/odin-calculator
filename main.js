@@ -13,10 +13,8 @@ let operator = DEFAULT_ARG;
  
 // "Global State handler" function
 
-
-
 function startUpCalculator() {
-    stepCalculator('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG);
+    step('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG); //the remaining args will be assigned as 'undefined'
     readout.textContent = DEFAULT_DISPLAY;
     operator = DEFAULT_ARG;
 }
@@ -76,38 +74,37 @@ const clearEntryBtn = document.getElementById('clearEntry');
 // Constraints of integer display on Readout regardless of the mode...
 integers.forEach((integer) => {
     integer.addEventListener('click', function(e) {
-        action = e.target;
-        if (displayValue.length === 16) {
-            return null;
+        //action = e.target; //Note: A read-only property means it cannot be overwritten or assigned to. Any such assignment will silently do nothing in non-strict mode. 
+        actionValue = e.target.value;
+        if (displayValue.length > 15) {
+            displayValue = displayValue.substring(0, 15);
         }
         
         // Readout to show '.0' if decimal mode is selected without any integers 
-        else if (displayValue === '0' && action.value === '.') {
+        else if (displayValue === '0' && actionValue === '.') {
             displayValue = '0.'
             rewriteReadout(displayValue);
         }
 
         // Replace default value, 0
-        else if ((displayValue === '0' && action.value === '0') || (displayValue === '0' && action.value !== '0')) {
-            displayValue = action.value;
+        else if ((displayValue === '0' && actionValue === '0') || (displayValue === '0' && actionValue !== '0')) {
+            displayValue = actionValue;
             rewriteReadout(displayValue);
         }
 
          // Limit Readout to display one decimal symbol
-         else if ((displayValue.indexOf('.') !== -1) && action.value === '.') {
+         else if ((displayValue.indexOf('.') !== -1) && actionValue === '.') {
             return null;
         }
     })
 });
-
 
 toggleSignBtn.onclick = e => {
     displayValue = toggleSign(e.target.value);
     rewriteReadout(displayValue);
 }
 clearAllBtn.onclick = () => startUpCalculator();
-clearEntryBtn.onclick = () => clearEntry();
-  
+clearEntryBtn.onclick = () => clearEntry();  
 
 /* SCREEN READOUT INTERACTIVITY */
 function rewriteReadout(displayValue) {
@@ -125,169 +122,161 @@ function clearEntry() {
     rewriteReadout(displayValue);
 }
 
+// MAIN
 // Button config dependent on each mode
 buttons.forEach((button) => {
     button.addEventListener('click', function(e) {
-        action = e.target;
+        actionID = e.target.id;
+        actionClassName = e.target.className;
+        actionValue = e.target.value;
         // Update State
-        [currentMode, displayValue, firstArg, secondArg] = step(currentMode, displayValue, firstArg, secondArg, action);
+        [currentMode, displayValue, firstArg, secondArg] = step(currentMode, displayValue, firstArg, secondArg, actionID, actionClassName, actionValue);
     })
 });
 
 /* GLOBAL STATE HANDLER */
-function step(currentMode, displayValue, firstArg, secondArg, action) {
-    switch (currentMode) {
+function step(current_mode, display_value, first_arg, second_arg, action_id, action_classname, action_value) {
+    switch (current_mode) {
         case 'default':
-            if  (action.id === 'zero' || action.id === 'equal') {
-                return ['default', displayValue, null, null];
-            }
-            else if (action.id === 'decimal') {              
-                displayValue = '0.'
-                rewriteReadout(displayValue);
-                return ['firstArgDecimalEdit', displayValue, null, null];
-            }
-            else if (action.className === 'integer') {
-                displayValue += action.value;
-                rewriteReadout(displayValue);
-                return ['firstArgIntegerEdit', displayValue, null, null];
+            if  (action_id === 'zero' || action_id === 'equal') {
+                return ['default', display_value, null, null];
+            } else if (action_id === 'decimal') {              
+                display_value = '0.'
+                rewriteReadout(display_value);
+                return ['firstArgDecimalEdit', display_value, null, null];
+            } else if (action_classname === 'integer') {
+                display_value = action_value;
+                rewriteReadout(display_value);
+                return ['firstArgIntegerEdit', display_value, null, null];
+            } else if (action_classname === 'operator') {
+                operator = action_value;
+                return ['firstArgLocked', DEFAULT_DISPLAY, Number(display_value), null];
+            } else {
+                return ['default', display_value, null, null];
             } 
-            else if (action.className === 'operator') {
-                operator = action.value;
-                return ['firstArgLocked', DEFAULT_DISPLAY, Number(displayValue), null];
-            }
-            break;
 
         case 'firstArgDecimalEdit':
-            if (action.id === 'decimal') {
-                return ['firstArgDecimalEdit', displayValue, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
+            if (action_id === 'decimal') {
+                return ['firstArgDecimalEdit', display_value, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
+            } else if (action_classname === 'integer') {
+                display_value += action_value; //concatenate string
+                rewriteReadout(display_value);
+                return ['firstArgDecimalEdit', display_value, null, null]
+            } else if (action_classname === 'operator') {
+                operator = action_value;
+                return ['firstArgLocked', display_value, Number(display_value), null];
+            } else if (action_id === 'equal') {
+                return ['result', display_value, Number(display_value), null];
             }
-            else if (action.className === 'integer') {
-                displayValue += action.value; //concatenate string
-                rewriteReadout(displayValue);
+            else {
+                return ['firstArgDecimalEdit', display_value, null, null];
             }
-            else if (action.className === 'operator') {
-                operator = action.value;
-                return ['firstArgLocked', displayValue, Number(displayValue), null];
-            }
-
-            else if (action.id === 'equal') {
-                return ['result', displayValue, Number(displayValue), null];
-            }
-            break;
 
         case 'firstArgIntegerEdit':
-            if (action.className === 'integer') {
-                displayValue += action.value;
-                rewriteReadout(displayValue);
+            if (action_classname === 'integer') {
+                display_value += action_value;
+                rewriteReadout(display_value);
+                return ['firstArgIntegerEdit', display_value, null, null];
+            } else if (action_id === 'decimal') {
+                display_value += action_value;
+                rewriteReadout(display_value);
+                return ['firstArgDecimalEdit', display_value, null, null];
+            } else if (action_classname === 'operator') {
+                operator = action_value;
+                return ['firstArgLocked', display_value, Number(display_value), null];
+            } else if (action_id === 'equal') {
+                return ['result', display_value, Number(display_value), null];
+            } else {
+                return ['firstArgIntegerEdit', display_value, null, null];
             }
-            else if (action.id === 'decimal') {
-                displayValue += action.value;
-                rewriteReadout(displayValue);
-                return ['firstArgDecimalEdit', displayValue, null, null];
-            }
-            else if (action.className === 'operator') {
-                operator = action.value;
-                return ['firstArgLocked', displayValue, Number(displayValue), null];
-                
-            }
-            else if (action.id === 'equal') {
-                return ['result', displayValue, Number(displayValue), null];
-            }
-            break;
             
         case 'firstArgLocked':
-            if (action.className === 'operator') {
-                operator = action.value;
+            if (action_classname === 'operator') {
+                operator = action_value;
+                return ['firstArgLocked', display_value, first_arg, null];
+            } else if (action_id === 'decimal') {
+                display_value = '.0'
+                rewriteReadout(display_value);
+                return ['secondArgDecimalEdit', display_value, first_arg, null];
+            } else if (action_id === 'integer') {
+                display_value = action_value;
+                rewriteReadout(display_value);
+                return ['secondArgIntegerEdit', display_value, first_arg, null];
+            } else if (action_id === 'equal') {
+                return ['result', display_value, first_arg, null];
+            } else {
+                return ['firstArgLocked', display_value, null, null];
             }
-            else if (action.id === 'decimal') {
-                displayValue = '.0'
-                rewriteReadout(displayValue);
-                return ['secondArgDecimalEdit', displayValue, firstArg, Number(displayValue)];
-            }
-            else if (action.id === 'integer') {
-                displayValue = action.value;
-                rewriteReadout(displayValue);
-                return ['secondArgIntegerEdit', displayValue, firstArg, Number(displayValue)];
-
-            }
-            else if (action.id === 'equal') {
-                return ['result', displayValue, firstArg, null];
-            }
-            break;
 
         case 'secondArgDecimalEdit':
-            if (action.className === 'integer') {
-                displayValue += action.value;
-                rewriteReadout(displayValue);
+            if (action_classname === 'integer') {
+                display_value += action_value;
+                rewriteReadout(display_value);
+                return ['secondArgDecimalEdit', display_value, first_arg, null];
+            } else if (action_classname === 'operator') {
+                second_arg = Number(display_value);
+                computedValue = operate(action_value, first_arg, second_arg).toString;
+                display_value = computedValue;
+                rewriteReadout(display_value);
+                return ['firstArgLocked', display_value, Number(display_value), null];
+            } else if (action_id === 'equal') {
+                second_arg = Number(display_value);
+                computedValue = operate(action_value, first_arg, secondArg).toString;
+                display_value = computedValue;
+                rewriteReadout(display_value);
+                return ['result', display_value, first_arg, second_arg];
             }
-            else if (action.className === 'operator') {
-                secondArg = Number(displayValue);
-                computedValue = operate(action.value, firstArg, secondArg).toString;
-                displayValue = computedValue;
-                rewriteReadout(displayValue);
-                return ['firstArgLocked', displayValue, Number(displayValue), null];
+            else {
+                return ['secondArgDecimalEdit', display_value, first_arg, null];
             }
-            else if (action.id === 'equal') {
-                secondArg = Number(displayValue);
-                computedValue = operate(action.value, firstArg, secondArg).toString;
-                displayValue = computedValue;
-                rewriteReadout(displayValue);
-                return ['result', displayValue, firstArg, secondArg];
-            }
-            break;
 
         case 'secondArgIntegerEdit':
-            if (action.id === 'integer') {
-                displayValue += action.value;
-                rewriteReadout(displayValue);
+            if (action_id === 'integer') {
+                display_value += action_value;
+                rewriteReadout(display_value);
+                return ['secondArgIntegerEdit', display_value, first_arg, null];
+            } else if (action_id === 'decimal'){
+                display_value += action_value;
+                second_arg = display_value;
+                rewriteReadout(display_value);
+                return ['secondArgDecimalEdit', display_value, first_arg, second_arg];
+            } else if (action_classname === 'operator') {
+                second_arg = Number(display_value);
+                computedValue = operate(operator, first_arg, second_arg).toString;
+                display_value = computedValue;
+                rewriteReadout(display_value);
+                return ['firstArgLocked', display_value, Number(display_value), null];
+            } else if (action_id === 'equal') {
+                second_arg = Number(display_value);
+                computedValue = operate(operator, first_arg, second_arg).toString;
+                display_value = computedValue;
+                rewriteReadout(display_value);
+                return ['result', display_value, first_arg, second_arg];
+            } else {
+                return ['secondArgIntegerEdit', display_value, first_arg, null];
             }
-            else if (action.id === 'decimal'){
-                displayValue += action.value;
-                secondArg = displayValue;
-                rewriteReadout(displayValue);
-                return ['secondArgDecimalEdit', displayValue, firstArg, secondArg];
-            }
-            else if (action.className === 'operator') {
-                secondArg = Number(displayValue);
-                computedValue = operate(operator, firstArg, secondArg).toString;
-                displayValue = computedValue;
-                rewriteReadout(displayValue);
-                return ['firstArgLocked', displayValue, Number(displayValue), null];
-            }
-            else if (action.id === 'equal') {
-                secondArg = Number(displayValue);
-                computedValue = operate(operator, firstArg, secondArg).toString;
-                displayValue = computedValue;
-                rewriteReadout(displayValue);
-                return ['result', displayValue, firstArg, secondArg];
-            }
-
-            break;
-
 
         case 'result':
-            if (action.id === 'integer') {
-                displayValue = action.value;
-                rewriteReadout(displayValue)
-                return ['firstArgIntegerEdit', displayValue, null, null];
+            if (action_id === 'integer') {
+                display_value = action_value;
+                rewriteReadout(display_value)
+                return ['firstArgIntegerEdit', display_value, null, null];
+            } else if (action_id === 'decimal') {
+                display_value = '0.';
+                rewriteReadout(display_value);
+                return ['firstArgDecimalEdit', display_value, null, null];
+            } else if (action_id === 'equal') {
+                return ['result', display_value, first_arg, second_arg];
+            } else if (action_id == 'operator') {
+                operator = action_id;
+                return ['firstArgLocked', display_value, Number(display_value), null];
             }
-            if (action.id === 'decimal') {
-                displayValue = '0.';
-                rewriteReadout(displayValue);
-                return ['firstArgDecimalEdit', displayValue, null, null];
+            else {
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
-            if (action.id === 'equal') {
-                return ['result', displayValue, firstArg, secondArg];
-            }
+        }
 
-            if (action.id == 'operator') {
-                operator = action.id;
-                return ['firstArgLocked', displayValue, Number(displayValue), null]
-            }
-            break;
     }
-
-}
 
 /* MAIN */
 startUpCalculator();
