@@ -18,7 +18,7 @@ let operator = DEFAULT_ARG;
 function startUpCalculator() {
     console.log('startup calculator');
     step('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG); //the remaining args will be assigned as 'undefined'
-    rewriteReadout('default', DEFAULT_DISPLAY);
+    readout.textContent = DEFAULT_DISPLAY;
     operator = DEFAULT_ARG;
 }
 
@@ -84,18 +84,23 @@ function rewriteReadout(current_mode, display_value, first_arg, second_arg, acti
     // Replace default value, 0
     else if ((display_value === '0' && action_value === '0') || (display_value === '0' && action_value !== '0')) {
         console.log('default value from 0');
+        console.log('display')
         display_value = action_value;
     }
     
     // Readout to show '.0' if decimal mode is selected without any integers 
-    else if (display_value === '0' && action_value === '.') {
+    else if (display_value === '0' && action_id === 'decimal') {
         console.log('show .0');
-        display_value = '0.'
+        display_value = '0.';
     }
 
-    // Limit Readout to display one decimal symbol: return the same
-    else if ((display_value.indexOf('.') !== -1) && (action_value === '.')) {
+    // Limit Readout to display one decimal symbol
+    //if readout already has 1 decimal AND decimal button is clicked
+    else if ((display_value.indexOf('.') == -1) && (action_value === '.')) {
         console.log('limit to 1 decimal point');
+        display_value += action_value;
+        console.log(display_value);
+        readout.textContent = display_value;
         return [current_mode, display_value, first_arg, second_arg];
     }
 
@@ -131,13 +136,11 @@ function rewriteReadout(current_mode, display_value, first_arg, second_arg, acti
 // Button config dependent on each mode
 buttons.forEach((button) => {
     button.addEventListener('click', function(e) {
-        actionID = e.target.id;
-        actionClassName = e.target.className;
-        actionValue = e.target.value;
+        let actionID = e.target.id;
+        let actionClassName = e.target.className;
+        let actionValue = e.target.value;
         console.log('button event');
-        // Update Readout 
-        rewriteReadout(currentMode, displayValue, firstArg, secondArg, actionID, actionValue);
-        console.log('button event after update readout');
+        
         // Update State
         [currentMode, displayValue, firstArg, secondArg] = step(currentMode, displayValue, firstArg, secondArg, actionID, actionClassName, actionValue);
     })
@@ -146,6 +149,8 @@ buttons.forEach((button) => {
 /* GLOBAL STATE HANDLER */
 function step(current_mode, display_value, first_arg, second_arg, action_id, action_classname, action_value) {
     console.log('global state handler');
+    console.log('display_value:', display_value, 'displayValue:', displayValue);
+    console.log('action_id:', action_id);
     switch (current_mode) {
         case 'default':
             console.log('default state');
@@ -154,7 +159,6 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             } 
             else if (action_id === 'decimal') {     
                 console.log('default-decimal');         
-                display_value = '0.'
                 rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             } 
@@ -170,18 +174,20 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 return ['firstArgLocked', DEFAULT_DISPLAY, Number(display_value), null];
             } 
             else {
-                console.log('default-default');
+                console.log('default-default keep state');
                 return ['default', display_value, null, null];
             } 
 
         case 'firstArgDecimalEdit':
             console.log('firstArgDecimalEdit state');
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'decimal') {
                 console.log('firstArgDecimalEdit - decimal');
+                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
             } 
             else if (action_classname === 'integer') {
-                console.log('firstArgDecimalEdit - integer');
+                console.log('firstArgIntegerEdit - integer');
                 display_value += action_value; //concatenate string
                 rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null]
@@ -202,18 +208,20 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
 
         case 'firstArgIntegerEdit':
             console.log('firstArgIntegerEdit state');
-            if (action_classname === 'integer') {
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
+            if (action_id === 'decimal') {
+                console.log('firstArgIntegerEdit - decimal');
+                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                return ['firstArgDecimalEdit', display_value, null, null];
+            }
+            
+            else if (action_classname === 'integer') {
                 console.log('firstArgIntegerEdit - integer');
                 display_value += action_value;
                 rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
-            else if (action_id === 'decimal') {
-                console.log('firstArgIntegerEdit - decimal');
-                display_value += action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
-                return ['firstArgDecimalEdit', display_value, null, null];
-            } 
+            
             else if (action_classname === 'operator') {
                 console.log('firstArgIntegerEdit - operator');
                 operator = action_value;
@@ -230,6 +238,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             
         case 'firstArgLocked':
             console.log('firstArgLocked state');
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_classname === 'operator') {
                 console.log('firstArgLocked - operator');
                 operator = action_value;
@@ -257,6 +266,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
 
         case 'secondArgDecimalEdit':
             console.log('secondArgDecimalEdit state');
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_classname === 'integer') {
                 console.log('secondArgDecimalEdit - integer');
                 display_value += action_value;
@@ -286,6 +296,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
 
         case 'secondArgIntegerEdit':
             console.log('secondArgIntegerEdit state');
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'integer') {
                 console.log('secondArgIntegerEdit - integer');
                 display_value += action_value;
@@ -322,6 +333,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
 
         case 'result':
             console.log('result state');
+            console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'integer') {
                 console.log('result - integer');
                 display_value = action_value;
