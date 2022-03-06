@@ -11,7 +11,8 @@ let resultantValue = DEFAULT_VALUE;
 let displayValue = DEFAULT_DISPLAY;
 let firstArg = DEFAULT_ARG; //null is used to intentionally give an empty value to something
 let secondArg = DEFAULT_ARG;
-let operator = DEFAULT_ARG;
+let current_operator = DEFAULT_ARG;
+let next_operator = DEFAULT_ARG;
  
 // "Global State handler" function
 
@@ -19,7 +20,7 @@ function startUpCalculator() {
     console.log('startup calculator');
     step('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG); //the remaining args will be assigned as 'undefined'
     readout.textContent = DEFAULT_DISPLAY;
-    operator = DEFAULT_ARG;
+    current_operator, next_operator = DEFAULT_ARG, DEFAULT_ARG;
 }
 
 /* "Mathematical arithmetic" helper functions */
@@ -73,13 +74,12 @@ const buttons = document.querySelectorAll('button');
 // EDIT: add string conversion for Readout since resultantValue is now to be a Number
 
 /* SCREEN READOUT INTERACTIVITY */
-function editReadout(display_value, action_id, action_value) {
-    console.log('rewriteReadout');
+function updateDisplayValue(display_value, action_id, action_value) {
+    console.log('updateDisplayValue');
     // Readout display limit
     if (display_value.length > 15) {
         console.log('display limit');
         display_value = display_value.substring(0, 15);
-        readout.textContent = display_value;
     }
     
     // Replace default value, 0
@@ -87,7 +87,6 @@ function editReadout(display_value, action_id, action_value) {
         console.log('default value from 0');
         console.log('display_value:', display_value, 'action_value:', action_value); 
         display_value = action_value
-        readout.textContent = display_value;
         return display_value;
     }
     
@@ -95,30 +94,25 @@ function editReadout(display_value, action_id, action_value) {
     else if (display_value === '0' && action_id === 'decimal') {
         console.log('show 0.');
         display_value = '0.'
-        readout.textContent = display_value;
         return display_value
     }
 
     else if (display_value === '0.' && action_id !== 'decimal') {
         console.log('show 0. + integer');
         display_value += action_value;
-        readout.textContent = display_value
         return display_value;
     }
 
     // Limit Readout to display one decimal symbol
-    //if readout doesn't already have a decimal AND decimal button is clicked
-    else if ((display_value.indexOf('.') == -1) && (action_value === '.')) {
+    //if readout already has a decimal AND decimal button is clicked
+    else if ((display_value.indexOf('.') !== -1) && (action_value === '.')) {
         console.log('limit to 1 decimal point');
-        display_value += action_value;
-        readout.textContent = display_value;
         return display_value;
     }
 
     else if (action_id === 'toggleSign') {
         console.log('toggle sign');
         display_value = (toggleSign(Number(display_value))).toString();
-        readout.textContent = display_value;
         return display_value;
     }
 
@@ -132,25 +126,29 @@ function editReadout(display_value, action_id, action_value) {
         let new_display_value = display_value.substring(0, display_value.length - 1);
         if (new_display_value.length === 0) {
             display_value = DEFAULT_DISPLAY
-            readout.textContent = display_value;
             return display_value;
         } 
         else {
             display_value = new_display_value;
-            readout.textContent = display_value;
             return display_value;
         }
     }
     else {
         display_value += action_value
-        readout.textContent = display_value;
         return display_value;
     }
     
 }
 
+function computeDisplayValue(display_value, operator, first_arg, second_arg) {
+    display_value = operate(operator, first_arg, second_arg).toString();
+    return display_value;
+}
 
-
+// Frontend function
+function updateReadout(display_value) {
+    readout.textContent = display_value;
+}
 
 
 // MAIN
@@ -180,17 +178,19 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             } 
             else if (action_id === 'decimal') {     
                 console.log('default-decimal');         
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             } 
             else if (action_classname === 'integer') {
                 console.log('default-integer');
-                display_value =rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
             else if (action_classname === 'operator') {
                 console.log('default-operator');
-                operator = action_value;
+                current_operator = action_value;
                 return ['firstArgLocked', DEFAULT_DISPLAY, Number(display_value), null];
             } 
             else {
@@ -203,17 +203,19 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'decimal') {
                 console.log('firstArgDecimalEdit - decimal');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
             } 
             else if (action_classname === 'integer') {
                 console.log('firstArgIntegerEdit - integer');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null]
             } 
             else if (action_classname === 'operator') {
                 console.log('firstArgDecimalEdit - operator');
-                operator = action_value;
+                current_operator = action_value;
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
@@ -230,19 +232,21 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'decimal') {
                 console.log('firstArgIntegerEdit - decimal');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             }
             
             else if (action_classname === 'integer') {
                 console.log('firstArgIntegerEdit - integer');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
             
             else if (action_classname === 'operator') {
                 console.log('firstArgIntegerEdit - operator');
-                operator = action_value;
+                current_operator = action_value;
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
@@ -259,18 +263,20 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_classname === 'operator') {
                 console.log('firstArgLocked - operator');
-                operator = action_value;
+                current_operator = action_value;
                 return ['firstArgLocked', display_value, first_arg, null];
             } 
+
             else if (action_id === 'decimal') {
                 console.log('firstArgLocked - decimal');
-                display_value = '.0'
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = '0.';
+                updateReadout(display_value);
                 return ['secondArgDecimalEdit', display_value, first_arg, null];
             } 
             else if (action_id === 'integer') {
                 console.log('firstArgLocked - integer');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgIntegerEdit', display_value, first_arg, null];
             }
             else if (action_id === 'equal') {
@@ -278,7 +284,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 return ['result', display_value, first_arg, null];
             } 
             else {
-                return ['firstArgLocked', display_value, null, null];
+                return ['firstArgLocked', display_value, first_arg, null];
             }
 
         case 'secondArgDecimalEdit':
@@ -286,23 +292,24 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_classname === 'integer') {
                 console.log('secondArgDecimalEdit - integer');
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgDecimalEdit', display_value, first_arg, null];
             } 
             else if (action_classname === 'operator') {
                 console.log('secondArgDecimalEdit - operator');
                 second_arg = Number(display_value);
-                resultantValue = operate(action_value, first_arg, second_arg);
-                display_value = resultantValue.toString();
-                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                next_operator = action_value;
+                display_value = computeDisplayValue(display_value, current_operator, first_arg, second_arg);
+                current_operator = next_operator;
+                updateReadout(display_value);
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
                 console.log('secondArgDecimalEdit - equal');
                 second_arg = Number(display_value);
-                resultantValue = operate(action_value, first_arg, second_arg).toString;
-                display_value = resultantValue.toString();
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = computeDisplayValue(display_value, current_operator, first_arg, second_arg);
+                updateReadout(display_value);
                 return ['result', display_value, first_arg, second_arg];
             }
             else {
@@ -315,31 +322,31 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'integer') {
                 console.log('secondArgIntegerEdit - integer');
-                display_value += action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgIntegerEdit', display_value, first_arg, null];
             } 
             else if (action_id === 'decimal'){
                 console.log('secondArgIntegerEdit - decimal');
-                display_value += action_value;
-                second_arg = display_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgDecimalEdit', display_value, first_arg, second_arg];
             } 
             else if (action_classname === 'operator') {
                 console.log('secondArgIntegerEdit - operator');
                 second_arg = Number(display_value);
-                resultantValue = operate(operator, first_arg, second_arg).toString;
-                display_value = resultantValue.toString();
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                next_operator = action.value;
+                display_value = computeDisplayValue(display_value, current_operator, first_arg, second_arg);
+                current_operator = next_operator;
+                updateReadout(display_value);
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
                 console.log('secondArgIntegerEdit - equal');
                 second_arg = Number(display_value);
-                resultantValue = operate(operator, first_arg, second_arg).toString;
-                display_value = resultantValue.toString();
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = computeDisplayValue(display_value, current_operator, first_arg, second_arg);
+                updateDisplayValue(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                updateReadout(display_value);
                 return ['result', display_value, first_arg, second_arg];
             } 
             else {
@@ -353,13 +360,15 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             if (action_id === 'integer') {
                 console.log('result - integer');
                 display_value = action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                updateDisplayValue(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
             else if (action_id === 'decimal') {
                 console.log('result - decimal');
                 display_value = '0.';
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                updateDisplayValue(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             } 
             else if (action_id === 'equal') {
@@ -368,7 +377,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             }
             else if (action_id == 'operator') {
                 console.log('result - operator');
-                operator = action_id;
+                current_operator = action_value;
                 return ['firstArgLocked', display_value, Number(display_value), null];
             }
             else {
