@@ -73,63 +73,84 @@ const buttons = document.querySelectorAll('button');
 // EDIT: add string conversion for Readout since resultantValue is now to be a Number
 
 /* SCREEN READOUT INTERACTIVITY */
-function rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value) {
+function editReadout(display_value, action_id, action_value) {
     console.log('rewriteReadout');
     // Readout display limit
     if (display_value.length > 15) {
         console.log('display limit');
         display_value = display_value.substring(0, 15);
+        readout.textContent = display_value;
     }
     
     // Replace default value, 0
-    else if ((display_value === '0' && action_value === '0') || (display_value === '0' && action_value !== '0')) {
+    else if (display_value === '0' && action_id !== 'decimal') {
         console.log('default value from 0');
-        console.log('display')
-        display_value = action_value;
+        console.log('display_value:', display_value, 'action_value:', action_value); 
+        display_value = action_value
+        readout.textContent = display_value;
+        return display_value;
     }
     
     // Readout to show '.0' if decimal mode is selected without any integers 
     else if (display_value === '0' && action_id === 'decimal') {
-        console.log('show .0');
-        display_value = '0.';
+        console.log('show 0.');
+        display_value = '0.'
+        readout.textContent = display_value;
+        return display_value
+    }
+
+    else if (display_value === '0.' && action_id !== 'decimal') {
+        console.log('show 0. + integer');
+        display_value += action_value;
+        readout.textContent = display_value
+        return display_value;
     }
 
     // Limit Readout to display one decimal symbol
-    //if readout already has 1 decimal AND decimal button is clicked
+    //if readout doesn't already have a decimal AND decimal button is clicked
     else if ((display_value.indexOf('.') == -1) && (action_value === '.')) {
         console.log('limit to 1 decimal point');
         display_value += action_value;
-        console.log(display_value);
         readout.textContent = display_value;
-        return [current_mode, display_value, first_arg, second_arg];
+        return display_value;
     }
 
-    else if (action_id === 'toggleSign' ) {
+    else if (action_id === 'toggleSign') {
         console.log('toggle sign');
         display_value = (toggleSign(Number(display_value))).toString();
         readout.textContent = display_value;
-        return [current_mode, display_value, first_arg, second_arg];
+        return display_value;
     }
 
     else if (action_id === 'clearAll') {
         console.log('clearall function');
-        return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+        startUpCalculator()
     }
 
     else if (action_id === 'clearEntry') {
         console.log('clear entry function');
-        let newDisplayValue = display_value.substring(0, display_value.length - 1);
-        if (newDisplayValue.length === 0) {
-            readout.textContent = DEFAULT_DISPLAY;
-            return [current_mode, DEFAULT_DISPLAY, first_arg, second_arg]
+        let new_display_value = display_value.substring(0, display_value.length - 1);
+        if (new_display_value.length === 0) {
+            display_value = DEFAULT_DISPLAY
+            readout.textContent = display_value;
+            return display_value;
         } 
         else {
-            readout.textContent = newDisplayValue;
-            return [current_mode, newDisplayValue, first_arg, second_arg];
+            display_value = new_display_value;
+            readout.textContent = display_value;
+            return display_value;
         }
     }
-    readout.textContent = display_value;
+    else {
+        display_value += action_value
+        readout.textContent = display_value;
+        return display_value;
+    }
+    
 }
+
+
+
 
 
 // MAIN
@@ -159,13 +180,12 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             } 
             else if (action_id === 'decimal') {     
                 console.log('default-decimal');         
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             } 
             else if (action_classname === 'integer') {
                 console.log('default-integer');
-                display_value = action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value =rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
             else if (action_classname === 'operator') {
@@ -183,13 +203,12 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'decimal') {
                 console.log('firstArgDecimalEdit - decimal');
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
             } 
             else if (action_classname === 'integer') {
                 console.log('firstArgIntegerEdit - integer');
-                display_value += action_value; //concatenate string
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null]
             } 
             else if (action_classname === 'operator') {
@@ -211,14 +230,13 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_id === 'decimal') {
                 console.log('firstArgIntegerEdit - decimal');
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             }
             
             else if (action_classname === 'integer') {
                 console.log('firstArgIntegerEdit - integer');
-                display_value += action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             } 
             
@@ -252,8 +270,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             } 
             else if (action_id === 'integer') {
                 console.log('firstArgLocked - integer');
-                display_value = action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['secondArgIntegerEdit', display_value, first_arg, null];
             }
             else if (action_id === 'equal') {
@@ -269,8 +286,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             console.log('display_value:', display_value, 'displayValue:', displayValue);
             if (action_classname === 'integer') {
                 console.log('secondArgDecimalEdit - integer');
-                display_value += action_value;
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['secondArgDecimalEdit', display_value, first_arg, null];
             } 
             else if (action_classname === 'operator') {
@@ -278,7 +294,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 second_arg = Number(display_value);
                 resultantValue = operate(action_value, first_arg, second_arg);
                 display_value = resultantValue.toString();
-                rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
+                display_value = rewriteReadout(current_mode, display_value, first_arg, second_arg, action_id, action_value);
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
