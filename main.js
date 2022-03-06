@@ -1,13 +1,11 @@
 // Initiaise default/start variables (or, states - see FSA diagram)
 const DEFAULT_MODE = 'default'
-const DEFAULT_VALUE = 0;
 const DEFAULT_DISPLAY = '0';
 const DEFAULT_ARG = null;
 
 // Initiaising global variables that define a global state at any one time
 /* RECAP Odin Project 'Etch-a-sketch': it toggled between 3 states: 'classic', 'rainbow', 'eraser' which corresponded to 3 buttons. */
 let currentMode = DEFAULT_MODE;
-let resultantValue = DEFAULT_VALUE;
 let displayValue = DEFAULT_DISPLAY;
 let firstArg = DEFAULT_ARG; //null is used to intentionally give an empty value to something
 let secondArg = DEFAULT_ARG;
@@ -19,7 +17,6 @@ let next_operator = DEFAULT_ARG;
 function startUpCalculator() {
     console.log('startup calculator');
     step('default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG); //the remaining args will be assigned as 'undefined'
-    readout.textContent = DEFAULT_DISPLAY;
     current_operator, next_operator = DEFAULT_ARG, DEFAULT_ARG;
 }
 
@@ -42,10 +39,10 @@ function divide(first_arg, second_arg) {
 }
 
 // makeNegative
-function toggleSign(num) {
-    return num * -1;
+function toggleSign(string_value) {
+    let toggledNum = Number(string_value) * -1;
+    return toggledNum.toString();
 }
-
 
 function operate(operator, first_arg, second_arg) {
     console.log('operator');
@@ -71,15 +68,13 @@ const readout = document.getElementById('readout');
 const buttons = document.querySelectorAll('button'); 
 
 
-// EDIT: add string conversion for Readout since resultantValue is now to be a Number
-
 /* SCREEN READOUT INTERACTIVITY */
 function updateDisplayValue(display_value, action_id, action_value) {
     console.log('updateDisplayValue');
     // Readout display limit
-    if (display_value.length > 15) {
+    if (display_value.length === 16) {
         console.log('display limit');
-        display_value = display_value.substring(0, 15);
+        return display_value.substring(0, 16);
     }
     
     // Replace default value, 0
@@ -112,13 +107,7 @@ function updateDisplayValue(display_value, action_id, action_value) {
 
     else if (action_id === 'toggleSign') {
         console.log('toggle sign');
-        display_value = (toggleSign(Number(display_value))).toString();
-        return display_value;
-    }
-
-    else if (action_id === 'clearAll') {
-        console.log('clearall function');
-        startUpCalculator()
+        return toggleSign(display_value);
     }
 
     else if (action_id === 'clearEntry') {
@@ -133,6 +122,7 @@ function updateDisplayValue(display_value, action_id, action_value) {
             return display_value;
         }
     }
+
     else {
         display_value += action_value
         return display_value;
@@ -141,6 +131,7 @@ function updateDisplayValue(display_value, action_id, action_value) {
 }
 
 function computeDisplayValue(display_value, operator, first_arg, second_arg) {
+    console.log('computeDisplayValue');
     display_value = operate(operator, first_arg, second_arg).toString();
     return display_value;
 }
@@ -173,7 +164,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
     switch (current_mode) {
         case 'default':
             console.log('default state');
-            if  (action_id === 'zero' || action_id === 'equal') {
+            if  (action_id === 'equal') {
                 return ['default', display_value, null, null];
             } 
             else if (action_id === 'decimal') {     
@@ -193,8 +184,16 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 current_operator = action_value;
                 return ['firstArgLocked', DEFAULT_DISPLAY, Number(display_value), null];
             } 
-            else {
+
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+            else { 
                 console.log('default-default keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(displayValue);
                 return ['default', display_value, null, null];
             } 
 
@@ -208,7 +207,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 return ['firstArgDecimalEdit', display_value, null, null]; //can't return NULL because an array can't be assigned to NULL (NULL is not iterable), return the same state instead */
             } 
             else if (action_classname === 'integer') {
-                console.log('firstArgIntegerEdit - integer');
+                console.log('firstArgDecimalEdit - integer');
                 display_value = updateDisplayValue(display_value, action_id, action_value);
                 updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null]
@@ -222,8 +221,17 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 console.log('firstArgDecimalEdit - equal');
                 return ['result', display_value, Number(display_value), null];
             }
+
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+
             else {
                 console.log('firstArgDecimalEdit - keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(displayValue);
                 return ['firstArgDecimalEdit', display_value, null, null];
             }
 
@@ -253,8 +261,17 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 console.log('firstArgIntegerEdit - equal');
                 return ['result', display_value, Number(display_value), null];
             } 
+            
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+
             else {
                 console.log('firstArgIntegerEdit - keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['firstArgIntegerEdit', display_value, null, null];
             }
             
@@ -283,7 +300,17 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 console.log('firstArgLocked - keep state');
                 return ['result', display_value, first_arg, null];
             } 
+
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+       
             else {
+                console.log('firstArgLocked - keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                current_operator = action_value;
                 return ['firstArgLocked', display_value, first_arg, null];
             }
 
@@ -312,8 +339,16 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 updateReadout(display_value);
                 return ['result', display_value, first_arg, second_arg];
             }
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+      
             else {
                 console.log('secondArgDecimalEdit - keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgDecimalEdit', display_value, first_arg, null];
             }
 
@@ -349,8 +384,15 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 updateReadout(display_value);
                 return ['result', display_value, first_arg, second_arg];
             } 
+            else if (action_id === 'clearAll') {
+                console.log('clearall function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
             else {
                 console.log('secondArgIntegerEdit - keep state');
+                display_value = updateDisplayValue(display_value, action_id, action_value);
+                updateReadout(display_value);
                 return ['secondArgIntegerEdit', display_value, first_arg, null];
             }
 
@@ -381,11 +423,11 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 return ['firstArgLocked', display_value, Number(display_value), null];
             }
             else {
-                console.log('result - keep state');
-                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                console.log('result - keep state: clearAll, clearEntry');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['result', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
         }
-
     }
 
 /* MAIN */
