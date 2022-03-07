@@ -317,7 +317,12 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 updateReadout(DEFAULT_DISPLAY);
                 return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
-       
+
+            else if (action_id === 'clearEntry') {
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+            }
+            
             else {
                 console.log('firstArgLocked - keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -352,7 +357,6 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                     return ['firstArgLocked', display_value, resultant_num, null];
                 }
             }
-             
             else if (action_id === 'equal') {
                 console.log('secondArgDecimalEdit - equal');
                 second_arg = Number(display_value);
@@ -373,6 +377,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 updateReadout(DEFAULT_DISPLAY);
                 return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
+
             else {
                 console.log('secondArgDecimalEdit - keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -412,7 +417,6 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                     return ['firstArgLocked', display_value, resultant_num, null];
                 }
             }
-
             else if (action_id === 'equal') {
                 console.log('secondArgIntegerEdit - equal');
                 second_arg = Number(display_value);
