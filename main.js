@@ -37,31 +37,18 @@ function updateReadout(display_value) {
 function operate(operator, first_arg, second_arg) {
     console.log('operator');
     switch (operator) {
-        case '/':
+        case '/': 
             if (second_arg === 0) return 'NaN';
-            else return divide(first_arg, second_arg);
+            else return first_arg / second_arg;
         case '*':
-            return multiply(first_arg, second_arg);
+            return first_arg * second_arg;
         case '-':
-            return subtract(first_arg, second_arg);
+            return first_arg - second_arg;
         case '+':
-            return add(first_arg, second_arg);
+            return first_arg + second_arg;
     }
 }
 
-/* "Mathematical arithmetic" helper functions */
-function add(first_arg, second_arg) {
-    return first_arg += second_arg;
-}
-function subtract(first_arg, second_arg) {
-    return first_arg -= second_arg;
-}
-function multiply(first_arg, second_arg) {
-    return first_arg *= second_arg;
-}
-function divide(first_arg, second_arg) {
-    return first_arg /= second_arg;
-}
 // makeNegative
 function toggleSign(display_value) {
     console.log(display_value);
@@ -79,7 +66,7 @@ function toggleSign(display_value) {
 /* DISPLAY VALUE INTERACTIVITY */
 function updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname) {
     console.log('updateDisplayValue');
-    console.log('current_mode, display_value, action_id, action_value, action_classname:', current_mode, display_value, action_id, action_value, action_classname);
+    console.log({current_mode, display_value, action_id, action_value, action_classname});
     if (display_value === 'NaN') {
         return 'Infinity&beyond!';
     }
@@ -128,15 +115,16 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
             return new_display_value
         }
     }
-    else if (action_classname === 'integer') {
-        console.log('else, display_value + action_value');
-        display_value += action_value
-        return display_value;
-    }
     else if (action_id === 'equal' || action_classname === 'operator') {
         console.log('displayValue after equal or operator');
         return display_value;
     }
+    else { // if integer or decimal
+        console.log('else, display_value + action_value');
+        display_value += action_value
+        return display_value;
+    }
+    
 }
 
 function computeDisplayValue(operator, first_arg, second_arg) {
@@ -469,7 +457,8 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 return ['firstArgLocked', display_value, first_arg, null];
             }
             else {
-                console.log('result - keep state: clearAll, clearEntry');
+                console.log('result - keep state: clearAll, clearEntry, toggleSign');
+                display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
                 updateReadout(DEFAULT_DISPLAY);
                 return ['result', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }

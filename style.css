@@ -80,13 +80,13 @@ button.operator:hover {
 
 
 button:active {
-    background-color: #e6e6e6;
+    background-color: #e6e6e6da;
     box-shadow: 0 5px transparent;
     transform: translateY(1px);
 }
 
 button.operator:active {
-    background-color: #ff8c00;
+    background-color: #ff8c00d7;
     box-shadow: 0 5px transparent;
     transform: translateY(0.5px);
 }
