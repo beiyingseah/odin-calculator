@@ -44,10 +44,10 @@ Ver 2: Operator that was selected in previous state can be deleted as part of Cl
 - [CSS] Make buttons responsive during hover, when selected, when disabled (for '.'), operations a different colour from keypad
 - [Allow for floating point numbers]  Add a . button and let users input decimals! Make sure you don’t let them type more than one though.
 - [Javascript] Add 'backspace' and 'clear' buttons] 
-- [Javascript] Add 'keyboard' support]
 
 Future versions
 - [Javascript] Readout is able to render the full mathematical statement such that every user input is shown throughout, e.g. "9 + 8 = 17". 
+- [Javascript] Add 'keyboard' support
 
 REFERENCES
 https://getcssscan.com/css-box-shadow-examples

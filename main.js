@@ -38,7 +38,7 @@ function operate(operator, first_arg, second_arg) {
     console.log('operator');
     switch (operator) {
         case '/':
-            if (input === 0) return NaN;
+            if (second_arg === 0) return 'NaN';
             else return divide(first_arg, second_arg);
         case '*':
             return multiply(first_arg, second_arg);
@@ -80,6 +80,10 @@ function toggleSign(display_value) {
 function updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname) {
     console.log('updateDisplayValue');
     console.log('current_mode, display_value, action_id, action_value, action_classname:', current_mode, display_value, action_id, action_value, action_classname);
+    if (display_value === 'NaN') {
+        return 'Infinity&beyond!';
+    }
+    
     // Replace default value, 0
     if (display_value === '0' && action_classname === 'integer') {
         console.log('default value from 0');
@@ -336,25 +340,39 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 second_arg = Number(display_value);
                 next_operator = action_value;
                 let resultant_num = computeDisplayValue(current_operator, first_arg, second_arg);
-                display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
-                updateReadout(display_value);
-                current_operator = next_operator;
-                return ['firstArgLocked', display_value, resultant_num, null];
-            } 
+                if (resultant_num == NaN ) { 
+                    display_value = updateDisplayValue(current_mode, resultant_num, action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                }
+                else {
+                    display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
+                    updateReadout(display_value);     
+                    current_operator = next_operator;
+                    return ['firstArgLocked', display_value, resultant_num, null];
+                }
+            }
+             
             else if (action_id === 'equal') {
                 console.log('secondArgDecimalEdit - equal');
                 second_arg = Number(display_value);
                 let resultant_num = computeDisplayValue(current_operator, first_arg, second_arg);
-                display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
-                updateReadout(display_value);
-                return ['result', display_value, resultant_num, second_arg];
+                if (resultant_num == 'NaN' ) { 
+                    display_value = updateDisplayValue(current_mode, resultant_num, action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                }
+                else {
+                    display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['result', display_value, resultant_num, second_arg];
+                }
             }
             else if (action_id === 'clearAll') {
                 console.log('clearall function');
                 updateReadout(DEFAULT_DISPLAY);
                 return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
-      
             else {
                 console.log('secondArgDecimalEdit - keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -382,19 +400,33 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 second_arg = Number(display_value);
                 next_operator = action_value;
                 let resultant_num = computeDisplayValue(current_operator, first_arg, second_arg);
-                display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
-                console.log('disiplay_value:', display_value, typeof(display_value));
-                updateReadout(display_value);
-                current_operator = next_operator;
-                return ['firstArgLocked', display_value, resultant_num, null];
-            } 
+                if (resultant_num == 'NaN' ) { 
+                    display_value = updateDisplayValue(current_mode, resultant_num, action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                }
+                else {
+                    display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    current_operator = next_operator;
+                    return ['firstArgLocked', display_value, resultant_num, null];
+                }
+            }
+
             else if (action_id === 'equal') {
                 console.log('secondArgIntegerEdit - equal');
                 second_arg = Number(display_value);
                 let resultant_num = computeDisplayValue(current_operator, first_arg, second_arg);
-                display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
-                updateReadout(display_value);
-                return ['result', display_value, resultant_num, second_arg];
+                if (resultant_num == 'NaN' ) { 
+                    display_value = updateDisplayValue(current_mode, resultant_num, action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                }
+                else {
+                    display_value = updateDisplayValue(current_mode, resultant_num.toString(), action_id, action_value, action_classname);
+                    updateReadout(display_value);
+                    return ['result', display_value, resultant_num, second_arg];
+                }
             } 
             else if (action_id === 'clearAll') {
                 console.log('clearall function');
