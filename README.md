@@ -48,6 +48,7 @@ Ver 2: Operator that was selected in previous state can be deleted as part of Cl
 Future versions
 - [Javascript] Readout is able to render the full mathematical statement such that every user input is shown throughout, e.g. "9 + 8 = 17". 
 - [Javascript] Add 'keyboard' support
+- [Javascrip] "Hold down" effect of operator buttons when they're in operation with CSS button.active class 
 
 REFERENCES
 https://getcssscan.com/css-box-shadow-examples

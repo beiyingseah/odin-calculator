@@ -64,15 +64,33 @@ button {
 }
 
 /* // Recap from Etch-a-Sketch: pseudo and non-pseudo CSS classes. */
-/* Pseudo active class for buttons that don't need the 'hold down' effect when pressed */
+/* Pseudo active classes for buttons that don't need the 'hold down' effect when pressed */
+
+button:hover {
+    background: #e6e6e6;
+    box-shadow: 0px 2px 10px 2px #ffb2b2;
+    color: #000;
+}
+
+button.operator:hover {
+    background: #ff8c00;
+    box-shadow: 0px 2px 10px 2px #ffb2b2;
+    color: white;
+}
+
+
 button:active {
-    
+    background-color: #e6e6e6;
+    box-shadow: 0 5px transparent;
+    transform: translateY(1px);
 }
 
-
-button.active {
-
+button.operator:active {
+    background-color: #ff8c00;
+    box-shadow: 0 5px transparent;
+    transform: translateY(0.5px);
 }
+
 
 
 /* FOOTER */
