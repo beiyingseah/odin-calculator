@@ -51,7 +51,7 @@ function operate(operator, first_arg, second_arg) {
 
 // makeNegative
 function toggleSign(display_value) {
-    console.log(display_value);
+    console.log('display_value before toggling:', display_value);
     if (display_value === '0') {
         console.log('toggle 0')
         return '0';
@@ -70,7 +70,6 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
     if (display_value === 'NaN') {
         return 'Infinity&beyond!';
     }
-    
     // Replace default value, 0
     if (display_value === '0' && action_classname === 'integer') {
         console.log('default value from 0');
@@ -80,7 +79,7 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
     // Readout to show '.0' if decimal mode is selected without any integers 
     else if (display_value === '0' && action_id === 'decimal') {
         console.log('show 0.');
-        return '0.'
+        return '0.';
     }
     else if (display_value === '0.' && action_classname === 'integer') {
         console.log('show 0. + integer');
@@ -115,6 +114,11 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
             return new_display_value
         }
     }
+    else if (action_id === 'clearAll') {
+        console.log('clear all function');
+        return DEFAULT_DISPLAY;
+    }
+
     else if (action_id === 'equal' || action_classname === 'operator') {
         console.log('displayValue after equal or operator');
         return display_value;
@@ -191,7 +195,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             else { 
                 console.log('default-default keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
-                updateReadout(displayValue);
+                updateReadout(display_value);
                 return ['default', display_value, null, null];
             } 
 
@@ -229,7 +233,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             else {
                 console.log('firstArgDecimalEdit - keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
-                updateReadout(displayValue);
+                updateReadout(display_value);
                 return ['firstArgDecimalEdit', display_value, null, null];
             }
 
@@ -456,10 +460,18 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 current_operator = action_value;
                 return ['firstArgLocked', display_value, first_arg, null];
             }
-            else {
-                console.log('result - keep state: clearAll, clearEntry, toggleSign');
+            else if (action_id == 'toggleSign') {
+                console.log('result - toggle sign');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
-                updateReadout(DEFAULT_DISPLAY);
+                console.log('display value:', display_value);
+                updateReadout(display_value);
+                return ['result', display_value, first_arg, second_arg];
+            }
+
+            else {
+                console.log('result - keep state: clearAll, clearEntry');
+                display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
+                updateReadout(display_value);
                 return ['result', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
         }
@@ -475,3 +487,7 @@ startUpCalculator();
 
 /* COMMENTS */
 //Is there a way to dynamically add the operators based on user's operator input?
+
+// DEBUG
+// Why doesn't toggleSign() get called? Need to console.log the conditions
+// Rename updateDisplayValue to editDisplayValue
