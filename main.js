@@ -76,6 +76,7 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         console.log('display_value:', display_value, 'action_value:', action_value); 
         return action_value;
     }
+    
     // Readout to show '.0' if decimal mode is selected without any integers 
     else if (display_value === '0' && action_id === 'decimal') {
         console.log('show 0.');
@@ -92,6 +93,12 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         console.log('limit to 1 decimal point');
         return display_value;
     }
+
+    else if (action_id === 'toggleSign') {
+        console.log('toggle sign');
+        return toggleSign(display_value);
+    }
+
     else if (current_mode === 'firstArgLocked' || current_mode === 'result') {
         if (action_classname === 'integer') {
             return action_value;
@@ -100,10 +107,7 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
             return '.0';
         }
     }
-    else if (action_id === 'toggleSign') {
-        console.log('toggle sign');
-        return toggleSign(display_value);
-    }
+    
     else if (action_id === 'clearEntry') {
         console.log('clear entry function');
         let new_display_value = display_value.substring(0, display_value.length - 1);
@@ -118,7 +122,6 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         console.log('clear all function');
         return DEFAULT_DISPLAY;
     }
-
     else if (action_id === 'equal' || action_classname === 'operator') {
         console.log('displayValue after equal or operator');
         return display_value;
@@ -465,7 +468,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
                 console.log('display value:', display_value);
                 updateReadout(display_value);
-                return ['result', display_value, first_arg, second_arg];
+                return ['result', display_value, display_value, second_arg];
             }
 
             else {
