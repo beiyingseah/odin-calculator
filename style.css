@@ -86,7 +86,7 @@ button:active {
 }
 
 button.operator:active {
-    background-color: #ff8c00d7;
+    background-color: #ff8c00c0;
     box-shadow: 0 5px transparent;
     transform: translateY(0.5px);
 }
