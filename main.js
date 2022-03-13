@@ -15,6 +15,7 @@ let next_operator = DEFAULT_ARG;
 /* List of interactive variables */ 
 const readout = document.getElementById('readout');
 const buttons = document.querySelectorAll('button'); 
+const toggleSignBtn = document.getElementById('toggleSign');
 
 function startUpCalculator() {
     console.log('startup calculator');
@@ -144,7 +145,6 @@ buttons.forEach((button) => {
         let actionClassName = e.target.className;
         let actionValue = e.target.value;
         console.log('button event');
-        
         // Update State
         [currentMode, displayValue, firstArg, secondArg] = step(currentMode, displayValue, firstArg, secondArg, actionID, actionClassName, actionValue);
     })
@@ -182,6 +182,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             else if (action_classname === 'operator') {
                 console.log('default-operator');
                 current_operator = action_value;
+                toggleSignBtn.classList.add('disabled');
                 return ['firstArgLocked', DEFAULT_DISPLAY, Number(display_value), null];
             } 
 
@@ -215,6 +216,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             else if (action_classname === 'operator') {
                 console.log('firstArgDecimalEdit - operator');
                 current_operator = action_value;
+                toggleSignBtn.classList.add('disabled');
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
@@ -238,7 +240,6 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
         case 'firstArgIntegerEdit':
             console.log('firstArgIntegerEdit state');
             console.log('display_value:', display_value, 'displayValue:', displayValue);
-
             if (action_id === 'decimal') {
                 console.log('firstArgIntegerEdit - decimal');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -256,6 +257,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
             else if (action_classname === 'operator') {
                 console.log('firstArgIntegerEdit - operator');
                 current_operator = action_value;
+                toggleSignBtn.classList.add('disabled');
                 return ['firstArgLocked', display_value, Number(display_value), null];
             } 
             else if (action_id === 'equal') {
@@ -288,12 +290,14 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 console.log('firstArgLocked - decimal');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
                 updateReadout(display_value);
+                toggleSignBtn.classList.remove('disabled');
                 return ['secondArgDecimalEdit', display_value, first_arg, null];
             } 
             else if (action_classname === 'integer') {
                 console.log('firstArgLocked - integer');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
                 updateReadout(display_value);
+                toggleSignBtn.classList.remove('disabled');
                 return ['secondArgIntegerEdit', display_value, first_arg, null];
             }
             else if (action_id === 'equal') {
@@ -316,6 +320,7 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
         case 'secondArgDecimalEdit':
             console.log('secondArgDecimalEdit state');
             console.log('display_value:', display_value, 'displayValue:', displayValue);
+            toggleSignBtn.classList.remove('disabled');
             if (action_classname === 'integer') {
                 console.log('secondArgDecimalEdit - integer');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);

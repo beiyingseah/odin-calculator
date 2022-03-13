@@ -63,6 +63,7 @@ button {
     color: white;
 }
 
+
 /* // Recap from Etch-a-Sketch: pseudo and non-pseudo CSS classes. */
 /* Pseudo active classes for buttons that don't need the 'hold down' effect when pressed */
 
@@ -91,6 +92,10 @@ button.operator:active {
     transform: translateY(0.5px);
 }
 
+#toggleSign.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 
 
 /* FOOTER */
