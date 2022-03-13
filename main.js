@@ -76,7 +76,6 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         console.log('display_value:', display_value, 'action_value:', action_value); 
         return action_value;
     }
-    
     // Readout to show '.0' if decimal mode is selected without any integers 
     else if (display_value === '0' && action_id === 'decimal') {
         console.log('show 0.');
@@ -93,12 +92,10 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         console.log('limit to 1 decimal point');
         return display_value;
     }
-
     else if (action_id === 'toggleSign') {
         console.log('toggle sign');
         return toggleSign(display_value);
     }
-
     else if (current_mode === 'firstArgLocked' || current_mode === 'result') {
         if (action_classname === 'integer') {
             return action_value;
@@ -107,15 +104,14 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
             return '.0';
         }
     }
-    
     else if (action_id === 'clearEntry') {
         console.log('clear entry function');
         let new_display_value = display_value.substring(0, display_value.length - 1);
         if (new_display_value.length === 0) {
-            return DEFAULT_DISPLAY
+            return DEFAULT_DISPLAY;
         } 
         else {
-            return new_display_value
+            return new_display_value;
         }
     }
     else if (action_id === 'clearAll') {
@@ -131,7 +127,6 @@ function updateDisplayValue(current_mode, display_value, action_id, action_value
         display_value += action_value
         return display_value;
     }
-    
 }
 
 function computeDisplayValue(operator, first_arg, second_arg) {
@@ -289,7 +284,6 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 current_operator = action_value;
                 return ['firstArgLocked', display_value, first_arg, null];
             } 
-
             else if (action_id === 'decimal') {
                 console.log('firstArgLocked - decimal');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -306,18 +300,11 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 console.log('firstArgLocked - keep state');
                 return ['result', display_value, first_arg, null];
             } 
-
-            else if (action_id === 'clearAll') {
-                console.log('clearall function');
+            else if ((action_id === 'clearAll') || (action_id === 'clearEntry')) {
+                console.log('clearAll or clearEntry function');
                 updateReadout(DEFAULT_DISPLAY);
                 return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
-
-            else if (action_id === 'clearEntry') {
-                updateReadout(DEFAULT_DISPLAY);
-                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
-            }
-            
             else {
                 console.log('firstArgLocked - keep state');
                 display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
@@ -470,12 +457,11 @@ function step(current_mode, display_value, first_arg, second_arg, action_id, act
                 updateReadout(display_value);
                 return ['result', display_value, display_value, second_arg];
             }
-
             else {
                 console.log('result - keep state: clearAll, clearEntry');
-                display_value = updateDisplayValue(current_mode, display_value, action_id, action_value, action_classname);
-                updateReadout(display_value);
-                return ['result', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
+                console.log('clearAll or clearEntry function');
+                updateReadout(DEFAULT_DISPLAY);
+                return ['default', DEFAULT_DISPLAY, DEFAULT_ARG, DEFAULT_ARG];
             }
         }
     }
