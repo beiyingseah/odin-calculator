@@ -46,7 +46,7 @@ Ver 2: Operator that was selected in previous state can be deleted as part of Cl
 - [Javascript] Add 'backspace' and 'clear' buttons] 
 
 Future versions
-- [Javascript] Readout is able to render the full mathematical statement such that every user input is shown throughout, e.g. "9 + 8 = 17". 
+- [Javascript] Readout is able to render the full mathematical statemaent such that every user input is shown throughout, e.g. "9 + 8 = 17". 
 - [Javascript] Add 'keyboard' support
 - [Javascript] "Hold down" effect of operator buttons when they're in operation with CSS button.active class 
 - [Javascript] Fix Readout limitations: toggleSign to work for large numbers (that max out the Readout limit); handle very large numbers correctly (not just truncating it lol), for example, 1234567891234567891 -- Readout shows --> 123456789123456...
